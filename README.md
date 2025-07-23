@@ -48,8 +48,12 @@ Check some parameters in config.py before training,
 * Use `__C.MAX_EPOCH = 100` to set the number of the training epochs (default:100).
 * Use `__C.NAME = training_name` to set the name of the training.
 * Use `__C.PRE_TRAIN_COUNTING` to set the pre-trained counter to accelerate the training process.
+
     The pre-trained counter can be download from this [link]().
-Check other parameters (`TRAIN_BATCH_SIZE`, `TRAIN_SIZE` etc.) in the SDNet/datasets/setting in case your GPU's memory is not support for the default setting.
+
+* Check other parameters (`TRAIN_BATCH_SIZE`, `TRAIN_SIZE` etc.) in the SDNet/datasets/setting in case your GPU's memory is not support for the default setting.
+
+* run `python train.py` for one GPU, or run `torchrun --master_port 29515 --nproc_per_node=4 train.py`
 
 Tips: The training process takes ~12 hours on `MovingDroneCrowd` dataset with one A800 (80GB Memory).
 
