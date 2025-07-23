@@ -35,9 +35,9 @@ pip install -r requirements.txt
  ```
 * Datasets
 
-**MovingDroneCrowd**: Download MovingDroneCrowd dataset from this [link](https://drive.google.com/file/d/1VufYjfFBFA96UCHK6XJYhgQBkRKokQte/view?usp=drive_link). Unzip `MovingDroneCrowd.zip` and place MovingDroneCrowd into your datasets folder.
+    ○ **MovingDroneCrowd**: Download MovingDroneCrowd dataset from this [link](https://drive.google.com/file/d/1VufYjfFBFA96UCHK6XJYhgQBkRKokQte/view?usp=drive_link). Unzip `MovingDroneCrowd.zip` and place `MovingDroneCrowd` into your datasets folder.
 
-**UAVVIC**: Please refer to their code repository [CGNet](https://github.com/streamer-AP/CGNet).
+    ○ **UAVVIC**: Please refer to their code repository [CGNet](https://github.com/streamer-AP/CGNet).
 
 # Citation
 If you find this project is useful for your research, please cite:
