@@ -26,9 +26,13 @@ MovingDroneCrowd are available at the [Google Drive](https://drive.google.com/fi
 If you find this project is useful for your research, please cite:
 
 ```bibtex
-@article{haniccvsteerer,
+@article{MVC,
   title={Video Individual Counting for Moving Drones},
   author={Fan, Yaowu and Wan, Jia and Han, Tao and Chan, Antoni B and Ma, Andy J},
   booktitle={ICCV},
   year={2025}
 }
+
+# Acknowledgement
+
+The released PyTorch training script borrows some codes from the [DRNet](https://github.com/taohan10200/DRNet). If you think this repo is helpful for your research, please consider cite them.
