@@ -48,6 +48,7 @@ Check some parameters in `config.py` before training:
 * Use `__C.PRE_TRAIN_COUNTING` to set the pre-trained counter to accelerate the training process.
 * Use `__C.GPU_ID = '0'` to set the GPU. You can set `__C.GPU_ID = '0, 1, 2, 3'` if you have multiple GUPs.
 * Use `__C.MAX_EPOCH = 100` to set the number of the training epochs (default:100).
+
     ◦ The pre-trained counter can be download from this [link]().
 * Set dataset related parameters (`DATA_PATH`, `TRAIN_BATCH_SIZE`, `TRAIN_SIZE` etc.) in the `SDNet/datasets/setting`.
 * run `python train.py` for one GPU, or run `torchrun --master_port 29515 --nproc_per_node=4 train.py`for multiple GPUs. (for example, 4 GPUs)
