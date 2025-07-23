@@ -44,10 +44,12 @@ MovingDroneCrowd are available at the [Google Drive](https://drive.google.com/fi
 Check some parameters in `config.py` before training:
 
 * Use `__C.DATASET = 'MovingDroneCrowd'` to set the dataset (default: `MovingDroneCrowd`).
-* Use `__C.GPU_ID = '0'` to set the GPU. You can set `__C.GPU_ID = '0, 1, 2, 3'` if you have multiple GUPs.
-* Use `__C.MAX_EPOCH = 100` to set the number of the training epochs (default:100).
 * Use `__C.NAME = training_name` to set the name of the training, which will be a part of the save directory.
 * Use `__C.PRE_TRAIN_COUNTING` to set the pre-trained counter to accelerate the training process.
+* Use `__C.GPU_ID = '0'` to set the GPU. You can set `__C.GPU_ID = '0, 1, 2, 3'` if you have multiple GUPs.
+* Use `__C.MAX_EPOCH = 100` to set the number of the training epochs (default:100).
+
+
 
     ◦ The pre-trained counter can be download from this [link]().
 
@@ -62,15 +64,10 @@ Tips: The training process takes ~12 hours on `MovingDroneCrowd` dataset with tw
 To reproduce the performance, download the pre-trained models from [Google Drive]() and then place pretrained_model files to `SDNet/pre_train_model/`. Check some parameters in `test.py` before test:
 
 * Use `DATASET = MovingDroneCrowd` to set the dataset used for test.
-
 * Use `test_name = xxx` to set a test name, which will be a part of the save director of test reults.
-
 * Use `test_intervals = 4` to set frame interval for test (default `4` for `MovingDroneCrowd`). 
-
 * Use `model_path = xxx` to set the pre-trained model file.
-
 * Use `GPU_ID = 0` to set the GPU used for test.
-
 * run `test.py`
 
 # Citation
