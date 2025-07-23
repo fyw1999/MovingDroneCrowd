@@ -13,6 +13,22 @@ that bypasses the challenging localization step and instead adopts a more learna
 ✅ Pretrained models for MovingDroneCrowd
 
 # MovingDroneCrowd
-To promote practical crowd counting, we introduce MovingDroneCrowd — a video-level dataset specifically designed for dense pedestrian scenes captured by moving drones under complex conditions. Notably, our dataset provides precise bounding box and ID labels for each person across frames, making it suitable for multiple pedestrian tracking from drone perspective in complex scenarios.
+To promote practical crowd counting, we introduce MovingDroneCrowd — a video-level dataset specifically designed for dense pedestrian scenes captured by moving drones under complex conditions. **Notably, our dataset provides precise bounding box and ID labels for each person across frames, making it suitable for multiple pedestrian tracking from drone perspective in complex scenarios.**
 
 ![dataset_example](figures/dataset_example.jpg)
+
+MovingDroneCrowd are available at the [Google Drive](https://drive.google.com/file/d/1VufYjfFBFA96UCHK6XJYhgQBkRKokQte/view?usp=drive_link), 
+
+
+
+
+# Citation
+If you find this project is useful for your research, please cite:
+
+```bibtex
+@article{haniccvsteerer,
+  title={Video Individual Counting for Moving Drones},
+  author={Fan, Yaowu and Wan, Jia and Han, Tao and Chan, Antoni B and Ma, Andy J},
+  booktitle={ICCV},
+  year={2025}
+}
