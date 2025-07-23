@@ -61,15 +61,18 @@ Tips: The training process takes ~12 hours on `MovingDroneCrowd` dataset with tw
 
 To reproduce the performance, download the pre-trained models from [Google Drive]() and then place pretrained_model files to `SDNet/pre_train_model/`. Check some parameters in `test.py` before test:
 
-* Use `model_path = xxx` to set the test model file (default `4` for `MovingDroneCrowd`).
+* Use `DATASET = MovingDroneCrowd` to set the dataset used for test.
 
-* Use `test_name` to set a test name, which will be a part of the save director of test reults.
+* Use `test_name = xxx` to set a test name, which will be a part of the save director of test reults.
 
+* Use `test_intervals = 4` to set frame interval for test (default `4` for `MovingDroneCrowd`). 
 
+* Use `model_path = xxx` to set the pre-trained model file.
 
-* set 
+* Use `GPU_ID = 0` to set the GPU used for test.
 
 * run `test.py`
+
 # Citation
 If you find this project is useful for your research, please cite:
 
