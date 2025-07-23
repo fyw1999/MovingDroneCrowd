@@ -26,13 +26,13 @@ MovingDroneCrowd are available at the [Google Drive](https://drive.google.com/fi
 
 * Install dependencies. We use python 3.11 and pytorch == 2.4.1 : http://pytorch.org.
 
-```bibtex
-conda create -n SDNet python=3.11
-conda activate SDNet
-conda install pytorch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 pytorch-cuda=12.4 -c pytorch -c nvidia
-cd ${SDNet}
-pip install -r requirements.txt
- ```
+    ```bibtex
+    conda create -n SDNet python=3.11
+    conda activate SDNet
+    conda install pytorch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 pytorch-cuda=12.4 -c pytorch -c nvidia
+    cd ${SDNet}
+    pip install -r requirements.txt
+    ```
 * Datasets
 
     ◦ **MovingDroneCrowd**: Download MovingDroneCrowd dataset from this [link](https://drive.google.com/file/d/1VufYjfFBFA96UCHK6XJYhgQBkRKokQte/view?usp=drive_link). Unzip `MovingDroneCrowd.zip` and place `MovingDroneCrowd` into your datasets folder.
@@ -59,7 +59,7 @@ Tips: The training process takes ~12 hours on `MovingDroneCrowd` dataset with on
 
 ## Test
 
-To reproduce the performance, download the pre-trained models from [Google Drive]() and then place pretrained_models folder to Root/DRNet/model/
+To reproduce the performance, download the pre-trained models from [Google Drive]() and then place pretrained_models folder to SDNet/pre_train_model/, and set `model_path = pre_train_model/xxx`
 
 * run `test.py`
 # Citation
