@@ -4,3 +4,8 @@ This is the official PyTorch implementation of paper: [Video Individual Counting
 that bypasses the challenging localization step and instead adopts a more learnable manner by first learning shared pedestrian density maps between consecutive frames.
 
 ![pipeline](figures/pipeline.jpg)
+
+# Catalog
+✅ MovingDroneCrowd
+✅ Training and Testing Code
+✅ Pretrained models for MovingDroneCrowd
