@@ -57,6 +57,11 @@ Check some parameters in config.py before training,
 
 Tips: The training process takes ~12 hours on `MovingDroneCrowd` dataset with one A800 (80GB Memory).
 
+## Test
+
+To reproduce the performance, download the pre-trained models from [Google Drive]() and then place pretrained_models folder to Root/DRNet/model/
+
+* run `test.py`
 # Citation
 If you find this project is useful for your research, please cite:
 
