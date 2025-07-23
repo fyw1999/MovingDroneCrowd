@@ -39,6 +39,15 @@ pip install -r requirements.txt
 
     ◦ **UAVVIC**: Please refer to their code repository [CGNet](https://github.com/streamer-AP/CGNet).
 
+## Training
+
+Check some parameters in config.py before training,
+
+* Use `__C.DATASET = 'MovingDroneCrowd'` to set the dataset (default: `MovingDroneCrowd`).
+* Use `__C.GPU_ID = '0'` to set the GPU. You can set `__C.GPU_ID = '0, 1, 2, 3'` if you have multiple GUPs.
+* Use `__C.MAX_EPOCH = 100` to set the number of the training epochs (default:100).
+
+
 # Citation
 If you find this project is useful for your research, please cite:
 
