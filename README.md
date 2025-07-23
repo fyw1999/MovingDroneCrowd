@@ -46,7 +46,12 @@ Check some parameters in config.py before training,
 * Use `__C.DATASET = 'MovingDroneCrowd'` to set the dataset (default: `MovingDroneCrowd`).
 * Use `__C.GPU_ID = '0'` to set the GPU. You can set `__C.GPU_ID = '0, 1, 2, 3'` if you have multiple GUPs.
 * Use `__C.MAX_EPOCH = 100` to set the number of the training epochs (default:100).
+* Use `__C.NAME = training_name` to set the name of the training.
+* Use `__C.PRE_TRAIN_COUNTING` to set the pre-trained counter to accelerate the training process.
+    The pre-trained counter can be download from this [link]().
+Check other parameters (`TRAIN_BATCH_SIZE`, `TRAIN_SIZE` etc.) in the SDNet/datasets/setting in case your GPU's memory is not support for the default setting.
 
+Tips: The training process takes ~12 hours on `MovingDroneCrowd` dataset with one A800 (80GB Memory).
 
 # Citation
 If you find this project is useful for your research, please cite:
