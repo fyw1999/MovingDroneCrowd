@@ -17,6 +17,7 @@ To promote practical crowd counting, we introduce MovingDroneCrowd — a video-l
 
 ![dataset_example](figures/dataset_example.jpg)
 
+The folder organization of MovingDroneCrowd is illustrated below:
 ```bibtex
 $MovingDroneCrowd/
 ├── frames
@@ -46,7 +47,8 @@ $MovingDroneCrowd/
 ├── test.txt
 └── val.txt
 ```
-MovingDroneCrowd are available at the [Google Drive](https://drive.google.com/file/d/1VufYjfFBFA96UCHK6XJYhgQBkRKokQte/view?usp=drive_link).
+Each scene folder contains several clips captured within that scene, and each clip has a corresponding CSV annotation file.
+MovingDroneCrowd are available at the [Google Drive](https://drive.google.com/file/d/1RUGncEVEi3cUtqEWJLFejt8CF8BNbuxv/view?usp=drive_link).
 
 # Getting started
 
