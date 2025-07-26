@@ -60,10 +60,10 @@ The first column indicates the frame index, the second column represents the ped
 * Install dependencies. We use python 3.11 and pytorch == 2.4.1 : http://pytorch.org.
 
     ```bibtex
-    conda create -n SDNet python=3.11
-    conda activate SDNet
+    conda create -n MovingDroneCrowd python=3.11
+    conda activate MovingDroneCrowd
     conda install pytorch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 pytorch-cuda=12.4 -c pytorch -c nvidia
-    cd ${SDNet}
+    cd ${MovingDroneCrowd}
     pip install -r requirements.txt
     ```
 * Datasets
