@@ -17,6 +17,35 @@ To promote practical crowd counting, we introduce MovingDroneCrowd — a video-l
 
 ![dataset_example](figures/dataset_example.jpg)
 
+```bibtex
+$MovingDroneCrowd/
+├── frames
+│   ├── scene_1
+│   │   ├── 1
+│   │   │  ├── 1.jpg 
+│   │   │  ├── 2.jpg
+│   │   │  ├── ...
+│   │   │  └── n.jpg
+│   │   ├── 2
+│   │   ├── ...
+│   │   └── m
+│   ├── scene_2
+│   ├── ...
+│   └── scene_k
+├── annotations
+│   ├── scene_1
+│   │   ├── 1.csv
+│   │   ├── 2.csv
+│   │   ├── ...
+│   │   └── m.csv
+│   ├── scene_2
+│   ├── ...
+│   └── scene_k
+├── scene_label.txt
+├── train.txt
+├── test.txt
+└── val.txt
+```
 MovingDroneCrowd are available at the [Google Drive](https://drive.google.com/file/d/1VufYjfFBFA96UCHK6XJYhgQBkRKokQte/view?usp=drive_link).
 
 # Getting started
@@ -45,7 +74,7 @@ Check some parameters in `config.py` before training:
 
 * Use `__C.DATASET = 'MovingDroneCrowd'` to set the dataset (default: `MovingDroneCrowd`).
 * Use `__C.NAME = training_name` to set the name of the training, which will be a part of the save directory.
-* Use `__C.PRE_TRAIN_COUNTING` to set the pre-trained counter to accelerate the training process.
+* Use `__C.PRE_TRAIN_COUNTER` to set the pre-trained counter to accelerate the training process.
 * Use `__C.GPU_ID = '0'` to set the GPU. You can set `__C.GPU_ID = '0, 1, 2, 3'` if you have multiple GUPs.
 * Use `__C.MAX_EPOCH = 100` to set the number of the training epochs (default:100). The pre-trained counter can be download from this [link]().
 * Set dataset related parameters (`DATA_PATH`, `TRAIN_BATCH_SIZE`, `TRAIN_SIZE` etc.) in the `SDNet/datasets/setting`.
