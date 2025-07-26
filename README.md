@@ -47,7 +47,12 @@ $MovingDroneCrowd/
 ├── test.txt
 └── val.txt
 ```
-Each scene folder contains several clips captured within that scene, and each clip has a corresponding CSV annotation file.
+Each scene folder contains several clips captured within that scene, and each clip has a corresponding CSV annotation file. Each annotation file consists of several rows, with each row in the following format:
+`0,0,1380,2137,27,23,-1,-1,-1,-1`.
+
+The first column indicates the frame index, the second column represents the pedestrian ID, and the third to sixth columns specify the bounding box of the pedestrian's head — including the top-left corner coordinates (x, y), width (w), and height (h). Note that image files are named starting from 1.jpg, while both frame indices and pedestrian IDs start from 0.
+
+
 MovingDroneCrowd are available at the [Google Drive](https://drive.google.com/file/d/1RUGncEVEi3cUtqEWJLFejt8CF8BNbuxv/view?usp=drive_link).
 
 # Getting started
