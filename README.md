@@ -17,7 +17,7 @@ To promote practical crowd counting, we introduce MovingDroneCrowd — a video-l
 ![dataset_example](figures/dataset_example.jpg)
 
 The folder organization of MovingDroneCrowd is illustrated below:
-```bibtex
+```
 $MovingDroneCrowd/
 ├── frames
 │   ├── scene_1
@@ -58,7 +58,7 @@ The first column indicates the frame index, the second column represents the ped
 
 * Install dependencies. We use python 3.11 and pytorch == 2.4.1 : http://pytorch.org.
 
-    ```bibtex
+    ```
     conda create -n MovingDroneCrowd python=3.11
     conda activate MovingDroneCrowd
     conda install pytorch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 pytorch-cuda=12.4 -c pytorch -c nvidia
