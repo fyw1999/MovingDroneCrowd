@@ -9,8 +9,6 @@ This is the official PyTorch implementation of paper: [Video Individual Counting
 
 ✅ Training and Testing Code for SDNet
 
-✅ Pretrained models for MovingDroneCrowd
-
 # MovingDroneCrowd
 To promote practical crowd counting, we introduce MovingDroneCrowd — a video-level dataset specifically designed for dense pedestrian scenes captured by moving drones under complex conditions. **Notably, our dataset provides precise bounding box and ID labels for each person across frames, making it suitable for multiple pedestrian tracking from drone perspective in complex scenarios.**
 
