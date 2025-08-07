@@ -99,7 +99,7 @@ Check some parameters in `test.py` before test:
 If you find this project is useful for your research, please cite:
 
 ```bibtex
-@article{MVC,
+@article{MDC,
   title={Video Individual Counting for Moving Drones},
   author={Fan, Yaowu and Wan, Jia and Han, Tao and Chan, Antoni B and Ma, Andy J},
   booktitle={ICCV},
