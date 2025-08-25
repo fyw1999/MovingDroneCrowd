@@ -4,6 +4,13 @@ This is the official PyTorch implementation of paper: [Video Individual Counting
 
 ![pipeline](figures/pipeline.jpg)
 
+# Roadmap 
+This project is under active development.  
+We are currently extending the framework with:
+* Extend the current dataset to a larger and more diverse one.
+
+* Propose a faster, more interpretable, and better-performing method. 
+
 # Catalog
 ✅ MovingDroneCrowd
 
