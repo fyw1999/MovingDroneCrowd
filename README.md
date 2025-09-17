@@ -81,7 +81,7 @@ Check some parameters in `config.py` before training:
 
 * Use `__C.DATASET = 'MovingDroneCrowd'` to set the dataset (default: `MovingDroneCrowd`).
 * Use `__C.NAME = xxx` to set the name of the training, which will be a part of the save directory.
-* Use `__C.PRE_TRAIN_COUNTER` to set the pre-trained counter to accelerate the training process. The pre-trained counter can be download from this [Google Drive](https://drive.google.com/file/d/1VME0IXJav-nXK9mu9-FrQEngfXmvgVCs/view?usp=drive_link) or [Baidu Netdisk](https://pan.baidu.com/s/1sfA2-tG40WtKHePgXqWhMw?pwd=1234).
+* Use `__C.PRE_TRAIN_COUNTER` to set the pre-trained counter to accelerate the training process. The pre-trained counter can be download from [Google Drive](https://drive.google.com/file/d/1VME0IXJav-nXK9mu9-FrQEngfXmvgVCs/view?usp=drive_link) or [Baidu Netdisk](https://pan.baidu.com/s/1sfA2-tG40WtKHePgXqWhMw?pwd=1234).
 * Use `__C.GPU_ID = '0'` to set the GPU. You can set `__C.GPU_ID = '0, 1, 2, 3'` if you have multiple GUPs.
 * Use `__C.MAX_EPOCH = 100` to set the number of the training epochs (default:100). 
 * Set dataset related parameters (`DATA_PATH`, `TRAIN_BATCH_SIZE`, `TRAIN_SIZE` etc.) in the `datasets/setting`.
