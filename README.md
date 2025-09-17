@@ -53,7 +53,7 @@ $MovingDroneCrowd/
 Each scene folder contains several clips captured within that scene, and each clip has a corresponding CSV annotation file. Each annotation file consists of several rows, with each row in the following format:
 `0,0,1380,2137,27,23,-1,-1,-1,-1`.
 
-The first column indicates the frame index, the second column represents the pedestrian ID, and the third to sixth columns specify the bounding box of the pedestrian's head — including the top-left corner coordinates (x, y), width (w), and height (h). Note that image files are named starting from 1.jpg, while both frame indices and pedestrian IDs start from 0. The last four -1 values are meaningless. MovingDroneCrowd are available at the [Google Drive](https://drive.google.com/file/d/1RUGncEVEi3cUtqEWJLFejt8CF8BNbuxv/view?usp=drive_link).
+The first column indicates the frame index, the second column represents the pedestrian ID, and the third to sixth columns specify the bounding box of the pedestrian's head — including the top-left corner coordinates (x, y), width (w), and height (h). Note that image files are named starting from 1.jpg, while both frame indices and pedestrian IDs start from 0. The last four -1 values are meaningless. MovingDroneCrowd are available at the [Google Drive](https://drive.google.com/file/d/1HW82KG8savX8ixMCzqKYRena-qTFMuIt/view?usp=drive_link) or [Baidu Netdisk](https://pan.baidu.com/s/13NsJehHNw5IfGZy7qE2R6w?pwd=1234).
 
 # Getting started
 
@@ -71,7 +71,7 @@ The first column indicates the frame index, the second column represents the ped
     ```
 * Datasets
 
-    ◦ **MovingDroneCrowd**: Download MovingDroneCrowd dataset from this [link](https://drive.google.com/file/d/1RUGncEVEi3cUtqEWJLFejt8CF8BNbuxv/view?usp=drive_link). Unzip `MovingDroneCrowd.zip` and place `MovingDroneCrowd` into your datasets folder.
+    ◦ **MovingDroneCrowd**: Download MovingDroneCrowd dataset. Unzip `MovingDroneCrowd.zip` and place `MovingDroneCrowd` into your datasets folder.
 
     ◦ **UAVVIC**: Please refer to their code repository [CGNet](https://github.com/streamer-AP/CGNet).
 
@@ -81,7 +81,7 @@ Check some parameters in `config.py` before training:
 
 * Use `__C.DATASET = 'MovingDroneCrowd'` to set the dataset (default: `MovingDroneCrowd`).
 * Use `__C.NAME = xxx` to set the name of the training, which will be a part of the save directory.
-* Use `__C.PRE_TRAIN_COUNTER` to set the pre-trained counter to accelerate the training process. The pre-trained counter can be download from this [link](https://drive.google.com/file/d/1ILLLMM3vDIm773XNOerj8rQH-DCQYzRA/view?usp=drive_link).
+* Use `__C.PRE_TRAIN_COUNTER` to set the pre-trained counter to accelerate the training process. The pre-trained counter can be download from this [Google Drive](https://drive.google.com/file/d/1VME0IXJav-nXK9mu9-FrQEngfXmvgVCs/view?usp=drive_link) or [Baidu Netdisk](https://pan.baidu.com/s/1sfA2-tG40WtKHePgXqWhMw?pwd=1234).
 * Use `__C.GPU_ID = '0'` to set the GPU. You can set `__C.GPU_ID = '0, 1, 2, 3'` if you have multiple GUPs.
 * Use `__C.MAX_EPOCH = 100` to set the number of the training epochs (default:100). 
 * Set dataset related parameters (`DATA_PATH`, `TRAIN_BATCH_SIZE`, `TRAIN_SIZE` etc.) in the `datasets/setting`.
