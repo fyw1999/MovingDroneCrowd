@@ -352,9 +352,9 @@ class ResNet_50_FPN_Encoder(nn.Module):
 
         fpn_f_list = self.neck2f(f_list)
         outputs = []
-        outputs.append(F.interpolate(fpn_f_list[0],scale_factor=0.25, mode='bilinear', align_corners=True))
-        outputs.append(F.interpolate(fpn_f_list[1],scale_factor=0.5, mode='bilinear', align_corners=True))
-        outputs.append(fpn_f_list[2])
+        outputs.append(F.interpolate(fpn_f_list[0],scale_factor=0.5, mode='bilinear', align_corners=True))
+        outputs.append(fpn_f_list[1])
+        outputs.append(F.interpolate(fpn_f_list[2],scale_factor=2, mode='bilinear', align_corners=True))
         multi_scale_f = torch.cat([outputs[0], outputs[1], outputs[2]], dim=1)
         feature = self.feature_head(multi_scale_f)
         outputs.append(feature)

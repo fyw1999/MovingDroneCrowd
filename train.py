@@ -65,7 +65,7 @@ class Trainer():
             model_dict.update(new_dict)
             self.model.load_state_dict(model_dict, strict=True)
         if is_main_process():
-            self.writer, self.log_txt = logger(self.exp_path, self.exp_name, self.pwd, ['exp','eval','figure','img', 'vis','output'], resume=cfg.RESUME)
+            self.writer, self.log_txt = logger(self.exp_path, self.exp_name, self.pwd, ['exp','eval','figure','img', 'vis','output', 'exp_backup', 'pre_train_model', 'visual_results'], resume=cfg.RESUME)
 
     def forward(self):
         for epoch in range(self.epoch, cfg.MAX_EPOCH + 1):
