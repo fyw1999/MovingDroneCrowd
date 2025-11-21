@@ -87,7 +87,7 @@ Check some parameters in `config.py` before training:
 * Set dataset related parameters (`DATA_PATH`, `TRAIN_BATCH_SIZE`, `TRAIN_SIZE` etc.) in the `datasets/setting`.
 * run `python train.py` for one GPU, or run `torchrun --master_port 29515 --nproc_per_node=4 train.py`for multiple GPUs. (for example, 4 GPUs)
 
-Tips: The training process takes ~12 hours on `MovingDroneCrowd` dataset with two A800 (80GB Memory).
+Tips: The results in the paper were obtained using two A800 GPUs (80G), with a batch size of 2 per GPU (total batch size = 4), and training took approximately 12 hours on `MovingDroneCrowd`. The number of training epochs can be set to 120.  
 
 ## Test
 
