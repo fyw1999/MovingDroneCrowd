@@ -111,7 +111,7 @@ We provide pre-trained weights for **SDNet** on the **MovingDroneCrowd** dataset
 
 | Model | Backbone | Dataset | MAE | RMSE | Download |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **SDNet** | VGG | MovingDroneCrowd | [44.33] | [74.53] | [Download Link](https://drive.google.com/file/d/1U3ovouIOTTCe0Dp2U90pg2O3hYmZeWqD/view?usp=sharing) |
+| **SDNet** | VGG | MovingDroneCrowd | 44.33 | 74.53 | [Download Link](https://drive.google.com/file/d/1U3ovouIOTTCe0Dp2U90pg2O3hYmZeWqD/view?usp=sharing) |
 
 ### ⚠️ Note on Reproduction
 The provided pre-trained weight was retrained for this repository. Due to the expiration of access to the original training server, the original weights are unavailable. While minor discrepancies exist compared to the published metrics in the paper, the model consistently maintains its SOTA performance.
