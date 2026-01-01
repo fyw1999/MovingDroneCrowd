@@ -116,6 +116,10 @@ We provide pre-trained weights for **SDNet** on the **MovingDroneCrowd** dataset
 ### ⚠️ Note on Reproduction
 The provided pre-trained weight was retrained for this repository. Due to the expiration of access to the original training server, the original weights are unavailable. While minor discrepancies exist compared to the published metrics in the paper, the model consistently maintains its SOTA performance.
 
+## 📬 Contact
+
+If you have any questions, please feel free to leave a message in the **[Issues](../../issues)** section. If I do not respond in time, please contact me via email at [**fanyw5@mail2.sysu.edu.cn**](mailto:fanyw5@mail2.sysu.edu.cn), as I may not receive timely email notifications from GitHub Issues.
+
 # Citation
 If you find this project is useful for your research, please cite:
 
