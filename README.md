@@ -8,12 +8,16 @@ This is the official PyTorch implementation of paper: [Video Individual Counting
 This project is under active development. We are currently extending the framework with:
 * Extend the current dataset to a larger and more diverse one.
 
-* Propose a faster, more interpretable, and better-performing method. 
+* Propose a faster, more interpretable, and better-performing method.
+   
+* I will be releasing a new version this month with a superior algorithm and a much larger dataset.
 
 # Catalog
 ✅ MovingDroneCrowd
 
 ✅ Training and Testing Code for SDNet
+
+✅ Model Zoo
 
 # MovingDroneCrowd
 To promote practical crowd counting, we introduce MovingDroneCrowd — a video-level dataset specifically designed for dense pedestrian scenes captured by moving drones under complex conditions. **Notably, our dataset provides precise bounding box and ID labels for each person across frames, making it suitable for multiple pedestrian tracking from drone perspective in complex scenarios.**
@@ -100,6 +104,17 @@ Check some parameters in `test.py` before test:
 * Use `model_path = xxx` to set the pre-trained model file.
 * Use `GPU_ID = 0` to set the GPU used for test.
 * run `test.py`
+
+## Model Zoo
+
+We provide pre-trained weights for **SDNet** on the **MovingDroneCrowd** dataset.
+
+| Model | Backbone | Dataset | MAE | RMSE | Download |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **SDNet** | VGG | MovingDroneCrowd | [Current MAE] | [Current RMSE] | [Download Link](https://drive.google.com/file/d/1U3ovouIOTTCe0Dp2U90pg2O3hYmZeWqD/view?usp=sharing) |
+
+### ⚠️ Note on Reproduction
+The provided pre-trained weight was retrained for this repository. Due to the expiration of access to the original training server, the original weights are unavailable. While minor discrepancies exist compared to the published metrics in the paper, the model consistently maintains its SOTA performance.
 
 # Citation
 If you find this project is useful for your research, please cite:
