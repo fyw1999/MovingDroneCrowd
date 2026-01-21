@@ -28,7 +28,7 @@ __C.LR_Base = 1e-5  # learning rate
 __C.WEIGHT_DECAY = 1e-6
 # when training epoch is more than it, the learning rate will be begin to decay
 
-__C.MAX_EPOCH = 100
+__C.MAX_EPOCH = 120
 __C.VAL_INTERVAL = 10
 __C.START_VAL = 20
 __C.PRINT_FREQ = 20
