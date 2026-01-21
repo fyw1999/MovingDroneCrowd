@@ -1,5 +1,10 @@
 # Video Individual Counting for Moving Drones (ICCV 2025 Highlight)
 ## Introduction
+
+> **🚀 Extension Update:**
+> We have extended this work to **[Video Individual Counting and Tracking from Moving Drones: A Benchmark and Methods](http://arxiv.org/abs/2601.12500)**. This new version introduces the **MovingDroneCrowd++** dataset and a stronger, more interpretable density-map-based VIC algorithm that enables tracking via simple post-processing, achieving significant performance improvements on both VIC and MOT tasks compared to previous methods. 
+> *The new dataset, code, and pre-trained models corresponding to the extended paper will be updated here soon.*
+
 This is the official PyTorch implementation of paper: [Video Individual Counting for Moving Drones](https://arxiv.org/abs/2503.10701), which introduce a video-level individual counting dataset captured by fast-moving drones in various crowded scenes and propose a **S**hared **D**ensity map-guided  **Net**work (**SDNet**) for VIC that bypasses the challenging localization step and instead adopts a more learnable manner by first learning shared pedestrian density maps between consecutive frames.
 
 ![pipeline](figures/pipeline.jpg)
