@@ -1,4 +1,13 @@
-# Video Individual Counting and Tracking from Moving Drones
+# Video Individual Counting and Tracking from Moving Drones (ICCV 2025 Highlight)
+
+<p align="center">
+  <a href="https://arxiv.org/abs/2601.12500"><img src="https://img.shields.io/badge/arXiv-2601.12500-b31b1b.svg" alt="arXiv"></a>
+  <a href="https://arxiv.org/abs/2503.10701"><img src="https://img.shields.io/badge/ICCV%202025-SDNet-blue.svg" alt="ICCV 2025"></a>
+  <a href="https://huggingface.co/datasets/fyw1999/MovingDroneCrowd"><img src="https://img.shields.io/badge/Dataset-Hugging%20Face-yellow.svg" alt="Dataset"></a>
+  <a href="https://huggingface.co/fyw1999/MovingDroneCrowd-Weights"><img src="https://img.shields.io/badge/Weights-Hugging%20Face-yellow.svg" alt="Weights"></a>
+  <a href="https://github.com/fyw1999/MovingDroneCrowd/releases"><img src="https://img.shields.io/badge/Release-ICCV__2025-green.svg" alt="Release"></a>
+  <a href="https://github.com/fyw1999/MovingDroneCrowd"><img src="https://img.shields.io/badge/Code-PyTorch-ee4c2c.svg" alt="Code"></a>
+</p>
 
 This is the official PyTorch project page for the **MovingDroneCrowd** series. The repository contains both the conference version and the extended version of our work on video individual counting and tracking from moving drones.
 
@@ -11,9 +20,9 @@ The ICCV 2025 version of the code has been released separately. If you want to u
 
 ## Catalog
 
-- [MovingDroneCrowd / MovingDroneCrowd++](#movingdronecrowd--movingdronecrowd)
-- [Training and Testing Code for SDNet, GD<sup>3</sup>A, and DVTrack](#training-and-testing-code-for-sdnet-gd3a-and-dvtrack)
-- [Model Zoo](#model-zoo)
+- ✅ [MovingDroneCrowd / MovingDroneCrowd++](#movingdronecrowd--movingdronecrowd)
+- ✅ [Training and Testing Code for SDNet, GD<sup>3</sup>A, and DVTrack](#training-and-testing-code-for-sdnet-gd3a-and-dvtrack)
+- ✅ [Model Zoo](#model-zoo)
 
 ## MovingDroneCrowd / MovingDroneCrowd++
 
@@ -306,7 +315,7 @@ Download links will be updated for the released pretrained models.
 | SDNet | VGG | MovingDroneCrowd++ | 76.24 | 160.33 | [download](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_MDC%2B%2B_best_model_VGG16.pth) |
 | GD<sup>3</sup>A | ResNet | MovingDroneCrowd++ | 40.11 | 71.61 | [download](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/GD3A_MDC%2B%2B_best_model_ResNet50.pth) |
 
-### Note on Reproduction
+### ⚠️ Note on Reproduction
 
 The provided SDNet weight on MovingDroneCrowd, namely the first row in the Model Zoo, was retrained for this repository. Due to the expiration of access to the original training server, the original weights are unavailable. While minor discrepancies exist compared to the published metrics in the paper, the model consistently maintains SOTA performance. To reproduce the results on the MovingDroneCrowd dataset, we recommend using the provided pretrained density-map estimation model. The total batch size, i.e., GPUs times batch size per GPU, should be set to `4`, with training for `120` epochs.
 
@@ -335,6 +344,6 @@ If this project helps your research, please cite the extended paper and the conf
 ## Acknowledgements
 The implementation refers to or adapts code from [STEERER](https://github.com/taohan10200/STEERER), [DRNet](https://github.com/taohan10200/DRNet), and [SuperGlue](https://github.com/magicleap/SuperGluePretrainedNetwork). Please consider citing the corresponding works if you use those components.
 
-## Contact
+## 📫 Contact
 
 If you have any questions, please feel free to leave a message in the [Issues](https://github.com/fyw1999/MovingDroneCrowd/issues) section. If I do not respond in time, please contact me via email at [fanyw5@mail2.sysu.edu.cn](mailto:fanyw5@mail2.sysu.edu.cn) or [fywyukee@gmail.com](mailto:fywyukee@gmail.com), as I may not receive timely email notifications from GitHub issues.
