@@ -166,7 +166,7 @@ __C.GPU_ID = "0,1,2,3"
 
 ##### Train SDNet
 
-Set the following parameters in `config.py` before training. We recommend setting `PRE_TRAIN_COUNTER` to the path of a global density-map estimation model pretrained on the corresponding target dataset to accelerate convergence. To maintain good performance, besides setting `PRE_TRAIN_COUNTER`, it is also recommended to keep the global batch size at least `4`. We recommend setting the following training parameters, while keeping the remaining parameters at their default values.
+Set the following parameters in `config.py` before training. We recommend setting `PRE_TRAIN_COUNTER` to the path of a global density-map estimation model pretrained on the corresponding target dataset to accelerate convergence. To maintain good performance, besides setting `PRE_TRAIN_COUNTER`, it is also recommended to keep the global batch size at least `4`.
 
 The pretrained global density-map estimation models for SDNet are available from [fyw1999/MovingDroneCrowd-Weights](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights):
 
@@ -175,6 +175,8 @@ The pretrained global density-map estimation models for SDNet are available from
 | MovingDroneCrowd | [SDNet_pre_trained_counter_MDC_VGG16_FPN_ep_200_downscale_16.pth](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_pre_trained_counter_MDC_VGG16_FPN_ep_200_downscale_16.pth) |
 | MovingDroneCrowd++ | [SDNet_pre_trained_counter_MDC++_VGG16_FPN_ep_150_downscale_16.pth](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_pre_trained_counter_MDC%2B%2B_VGG16_FPN_ep_150_downscale_16.pth) |
 | VSCrowd | [SDNet_pre_trained_counter_VSCrowd_VGG16_FPN_ep_100_downscale_16.pth](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_pre_trained_counter_VSCrowd_VGG16_FPN_ep_100_downscale_16.pth) |
+
+We recommend setting the following training parameters, while keeping the remaining parameters at their default values.
 
 ```python
 __C.PRE_TRAIN_COUNTER = "/path/to/SDNet_pre_trained_counter_MDC++_VGG16_FPN_ep_150_downscale_16.pth"
@@ -203,7 +205,7 @@ torchrun --master_port 29515 --nproc_per_node=4 train.py
 
 Set `global_counter` before training. Here, `global_counter` refers to a pretrained image-level density-map estimator. The current code supports `STEERER` from [taohan10200/STEERER](https://github.com/taohan10200/STEERER) and `customed`, a simple custom density-map estimator composed of VGG16, FPN, and a density regression head. Other image-level density-map estimators can also be plugged in, but their downsampling rate should be consistent with GD<sup>3</sup>A, which is currently `8`, and the output density map must have the correct scale, for example after applying the correct density factor.
 
-After choosing `global_counter`, set `pre_trained_global_counter` to the path of the corresponding model pretrained on the target dataset. We recommend setting the following training parameters, while keeping the remaining parameters at their default values.
+After choosing `global_counter`, set `pre_trained_global_counter` to the path of the corresponding model pretrained on the target dataset. 
 
 The pretrained global counters for GD<sup>3</sup>A are available from [fyw1999/MovingDroneCrowd-Weights](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights):
 
@@ -211,6 +213,8 @@ The pretrained global counters for GD<sup>3</sup>A are available from [fyw1999/M
 | --- | --- | --- |
 | MovingDroneCrowd++ | STEERER | [GD3A_pre_trained_global_counter_STEERER_MDC++_ep_201_mae_13.5_mse_19.1.pth](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/GD3A_pre_trained_global_counter_STEERER_MDC%2B%2B_ep_201_mae_13.5_mse_19.1.pth) |
 | VSCrowd | customed | [GD3A_pre_trained_global_counter_VGG16_FPN_VSCrowd_kernel_size_25_epoch_50.pth](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/GD3A_pre_trained_global_counter_VGG16_FPN_VSCrowd_kernel_size_25_epoch_50.pth) |
+
+We recommend setting the following training parameters, while keeping the remaining parameters at their default values.
 
 ```python
 __C.global_counter = "STEERER"  # "STEERER" or "customed"
