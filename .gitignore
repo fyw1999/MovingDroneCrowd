@@ -1,2 +1,8 @@
-pre_train_model
-exp
+pre_train_model/
+exp/
+.vscode/
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
