@@ -137,6 +137,8 @@ pip install -r requirements.txt
   huggingface-cli download fyw1999/MovingDroneCrowd --repo-type dataset --local-dir /path/to/MovingDroneCrowd++
   ```
 
+  - **VSCrowd**: The original dataset is available at [HopLee6/VSCrowd-Dataset](https://github.com/HopLee6/VSCrowd-Dataset). Please refer to [DRNet](https://github.com/taohan10200/DRNet) for the dataset split and usage. Note that VSCrowd is also named `SENSE` in [DRNet](https://github.com/taohan10200/DRNet) and this codebase.
+
   - **UAVVIC**: Please refer to their code repository [CGNet](https://github.com/streamer-AP/CGNet).
 
   After preparing a dataset, set dataset-related parameters in the corresponding file under `cusdatasets/setting/`. For example, for MovingDroneCrowd/MovingDroneCrowd++, the commonly changed options are:
