@@ -114,9 +114,7 @@ DVTrack is built on the group-wise descriptor association of GD<sup>3</sup>A. Wi
 
 ## Training and Testing Code for SDNet, GD<sup>3</sup>A, and DVTrack
 
-### Getting Started
-
-#### Preparation
+### Preparation
 
 - Clone this repo in the directory.
 
@@ -152,7 +150,7 @@ pip install -r requirements.txt
 
   For GD<sup>3</sup>A, `TRAIN_BATCH_SIZE` can be set to `4` on a 48GB GPU. For SDNet, `TRAIN_BATCH_SIZE` should be set to `1` on a 48GB GPU because it requires more GPU memory.
 
-#### Training
+### Training
 
 Before using a specific method, first set the basic experiment parameters in `config.py`, including `MODEL`, `NAME`, `DATASET`, `encoder`, and `GPU_ID`. For MovingDroneCrowd++, keep `DATASET = 'MovingDroneCrowd'` in `config.py`, and set `DATA_PATH` in `cusdatasets/setting/MovingDroneCrowd.py` to the MovingDroneCrowd++ dataset path.
 
@@ -235,9 +233,9 @@ For distributed training:
 torchrun --master_port 29515 --nproc_per_node=4 train.py
 ```
 
-#### Test
+### Test
 
-##### Test SDNet / GD<sup>3</sup>A
+#### Test SDNet / GD<sup>3</sup>A
 
 `test.py` evaluates SDNet or GD<sup>3</sup>A on MovingDroneCrowd++. The main difference is the value of `MODEL`. For both methods, set `model_path` to the trained SDNet or GD<sup>3</sup>A checkpoint. For GD<sup>3</sup>A, additionally set `counter` to `STEERER` or `customed`, and set `pre_trained_counter_path` to the corresponding pretrained global counter. For SDNet, `counter` and `pre_trained_counter_path` are not needed. Other options such as `output_dir`, `test_name`, `test_visual`, and `GPU_ID` can be changed according to your needs.
 
@@ -268,7 +266,7 @@ python test.py \
 ```
 
 To save visualizations, set `--test_visual True`. If you need full inflow/outflow evaluation (MIAE and MOAE) on every adjacent pair, set `skip_flag=False` in `test.py` before running.
-##### Test DVTrack
+#### Test DVTrack
 
 For DVTrack, `MODEL` must be `GD3A`. The model and counter parameters are the same as in the GD<sup>3</sup>A test above: set `model_path` to the trained GD<sup>3</sup>A checkpoint, set `counter` to `STEERER` or `customed`, and set `pre_trained_counter_path` to the corresponding pretrained global counter.
 
