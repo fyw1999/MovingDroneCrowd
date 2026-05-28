@@ -1,5 +1,7 @@
 import os
+import re
 import cv2
+import tifffile
 import pdb
 import math
 import time
@@ -14,17 +16,19 @@ import  torch.nn.functional as F
 import torchvision.utils as vutils
 import torchvision.transforms as standard_transforms
 
-# def adjust_learning_rate(optimizer, epoch, base_lr1=0, power=0.9):
-#     lr1 =  base_lr1 * power ** ((epoch - 1))
-#     optimizer.param_groups[0]['lr'] = lr1
-#     optimizer.param_groups[1]['lr'] = lr2
-#     return lr1 , lr2
-def adjust_learning_rate(optimizer, base_lr, max_iters, cur_iters, power=0.9):
+def adjust_base_learning_rate(optimizer, base_lr, max_iters, cur_iters, power=0.9):
     lr = base_lr * ((1 - float(cur_iters) / max_iters) ** (power))
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
     return lr
 
+def adjust_learning_rate(optimizer, base_lr1, base_lr2, max_iters, cur_iters, power=0.9):
+    lr1 = base_lr1 * ((1 - float(cur_iters) / max_iters) ** (power))
+    lr2 = base_lr2 * ((1 - float(cur_iters) / max_iters) ** (power))
+    optimizer.param_groups[0]['lr'] = lr1
+    optimizer.param_groups[1]['lr'] = lr2
+    return lr1, lr2
+        
 def weights_normal_init(*models):
     for model in models:
         dev=0.01
@@ -290,27 +294,26 @@ def print_NWPU_summary_det(trainer, scores):
     print( best_str)
     print( '='*50 )
 
-def update_model(trainer, scores):
+def update_model(trainer, scores, main_meric='seq_MAE'):
     train_record = trainer.train_record
-    log_file = trainer.log_txt
     epoch = trainer.epoch
     snapshot_name = 'ep_%d_iter_%d'% (epoch, trainer.i_tb)
     for key, data in scores.items():
         snapshot_name += ('_'+ key+'_%.3f'%data)
-    # snapshot_name = 'ep_%d_F1_%.3f_Pre_%.3f_Rec_%.3f_mae_%.1f_mse_%.1f' % (epoch + 1, F1, Pre, Rec, mae, mse)
 
-    for key, data in  scores.items():
-        print(key,data)
-        if data < train_record[key] :
-            train_record['best_model_name'] = snapshot_name
-            if log_file is not None:
-                logger_txt(log_file, epoch, scores)
-            to_saved_weight = trainer.model.state_dict()
-
-            torch.save(to_saved_weight, os.path.join(trainer.exp_path, trainer.exp_name, snapshot_name + '.pth'))
-
+    for key, data in scores.items():
         if data < train_record[key]:
             train_record[key] = data
+            if key == main_meric:
+                train_record['best_model_name'] = snapshot_name
+                to_saved_weight = trainer.model.state_dict()
+                torch.save(to_saved_weight, os.path.join(trainer.exp_path, trainer.exp_name, "best_model" + '.pth'))
+
+    # each validation
+    to_saved_weight = trainer.model.state_dict()
+    torch.save(to_saved_weight, os.path.join(trainer.exp_path, trainer.exp_name, snapshot_name + '.pth'))
+
+    # for resume
     latest_state = {'train_record':train_record, 'net':trainer.model.state_dict(), 'optimizer':trainer.optimizer.state_dict(),
                     'epoch': trainer.epoch, 'i_tb':trainer.i_tb,\
                     'exp_path':trainer.exp_path, 'exp_name':trainer.exp_name}
@@ -570,7 +573,7 @@ def change2map(intput_map):
     vis_map = cv2.applyColorMap(vis_map, cv2.COLORMAP_JET)
     return vis_map
 
-def save_visual_results(data, restor_transform, save_base, iter_num, rank):
+def save_visual_results(data, restor_transform, save_base, iter_num, rank, visual_count=None, mode='test'):
     assert (len(data)-1) % 2 == 0
     num = (len(data)-1) // 2
     h = data[0].size(2)
@@ -582,7 +585,7 @@ def save_visual_results(data, restor_transform, save_base, iter_num, rank):
     W = w * len(data) + margin * num + 3 * margin * num
     H = h * batch_size + margin * (batch_size - 1)
 
-    out = np.zeros((H, W, 3))
+    out = np.zeros((H, W, 3), dtype=np.uint8)
     
     start_h = 0
     
@@ -595,23 +598,57 @@ def save_visual_results(data, restor_transform, save_base, iter_num, rank):
         for j in range(num):
             data_map = data[1 + j*2][i].detach().cpu().numpy()
             vis_data_map = change2map(data_map.copy())
+            if visual_count:
+                if j == 0:
+                    text = 'Global'
+                elif j == 1 or j== 3:
+                    text = 'Shared'
+                elif j ==2:
+                    text = 'IN'
+                else:
+                    text = 'OUT'
+                count = visual_count[j*2][i]
+                vis_data_map = show_visual_count(vis_data_map, count, 'GT' + ' ' + text)
             out[start_h:start_h + h, start_w:start_w + w] = vis_data_map
             start_w += w + margin
 
             data_map = data[1 + j*2 + 1][i].detach().cpu().numpy()
             vis_data_map = change2map(data_map.copy())
+            if visual_count:
+                count = visual_count[j*2 + 1][i]
+                vis_data_map = show_visual_count(vis_data_map, count, 'Pre' + ' ' + text)
             out[start_h:start_h + h, start_w:start_w + w] = vis_data_map
             start_w += w + 3 * margin  
         
         start_h += h + margin
     if not os.path.exists(save_base):
         os.makedirs(save_base, exist_ok=True)
-    cv2.imwrite(os.path.join(save_base, "{}_{}_visual.jpg".format(rank, iter_num)), out)
+    if mode == 'train':
+        cv2.imwrite(os.path.join(save_base, "{}_{}_visual.jpg".format(rank, iter_num)), out)
+    else: # save very large images using tiff format during testing
+        out = cv2.cvtColor(out, cv2.COLOR_BGR2RGB)
+        tifffile.imwrite(os.path.join(save_base, "{}_{}_visual.tiff".format(rank, iter_num)), out, compression='jpeg')
 
-def save_test_visual(visual_maps, imgs, scene_name, restor_transform, save_path, iter, rank):
+def show_visual_count(vis_map, count, text):
+    import cv2
+    text_content = text + ' ' + str(int(count))
+
+    font = cv2.FONT_HERSHEY_TRIPLEX  # 这种字体在超大字号下依然很稳重
+    font_scale = 4                   # 您要求的字体大小
+    font_thickness = 5               # 【关键】白色主体必须加粗，否则看不清
+    outline_thickness = 10  
+    position = (50, 150)       # 位置 (x, y)，坐标原点在左上角。这里设为距离左边30像素，距离上边50像素
+    cv2.putText(vis_map, text_content, position, font, font_scale, (0, 0, 0), outline_thickness, cv2.LINE_AA)
+    cv2.putText(vis_map, text_content, position, font, font_scale, (255, 255, 255), font_thickness, cv2.LINE_AA)
+    return vis_map
+    
+def save_test_visual(visual_maps, imgs, scene_name, restor_transform, save_path, iter, rank, visual_maps_count=None):
+    visual_maps[visual_maps < 0] = 0
     visual_data = [visual_maps[:, i, :, :] for i in range(visual_maps.shape[1])]
     visual_data = [torch.stack(imgs, dim=0)] + visual_data
-    save_visual_results(visual_data, restor_transform, os.path.join(save_path, scene_name), iter, rank)
+    if visual_maps_count is not None:
+        visual_maps_count = [visual_maps_count[:, i] for i in range(visual_maps_count.shape[1])]
+    save_visual_results(visual_data, restor_transform, os.path.join(save_path, scene_name), iter, rank, visual_maps_count)
     
 def change2map(intput_map):
     intput_map = intput_map.squeeze(0)
@@ -638,14 +675,20 @@ def compute_metrics_single_scene(pre_dict, gt_dict, intervals):
 
     return pre_crowdflow_cnt, gt_crowdflow_cnt,  inflow_cnt, outflow_cnt
 
+def safe_mean(tensor, default=0.0):
+    return torch.mean(tensor) if tensor.numel() > 0 else torch.tensor(default, dtype=tensor.dtype, device=tensor.device)
+
 def compute_metrics_all_scenes(scenes_pred_dict, scene_gt_dict, intervals):
     scene_cnt = len(scenes_pred_dict)
+    if not isinstance(intervals, list):
+        intervals = [intervals] * scene_cnt
+
     metrics = {'MAE':torch.zeros(scene_cnt,2), 'WRAE':torch.zeros(scene_cnt,2), 'MIAE':torch.zeros(0), 'MOAE':torch.zeros(0)}
-    for i,(pre_dict, gt_dict) in enumerate( zip(scenes_pred_dict, scene_gt_dict),0):
+    for i, (pre_dict, gt_dict, interval) in enumerate( zip(scenes_pred_dict, scene_gt_dict, intervals), 0):
         time = pre_dict['time']
 
         pre_crowdflow_cnt, gt_crowdflow_cnt, inflow_cnt, outflow_cnt=\
-            compute_metrics_single_scene(pre_dict, gt_dict, intervals)
+            compute_metrics_single_scene(pre_dict, gt_dict, interval)
         mae = np.abs(pre_crowdflow_cnt - gt_crowdflow_cnt)
         metrics['MAE'][i, :] = torch.tensor([pre_crowdflow_cnt, gt_crowdflow_cnt])
         metrics['WRAE'][i,:] = torch.tensor([mae/(gt_crowdflow_cnt+1e-10), time])
@@ -653,13 +696,13 @@ def compute_metrics_all_scenes(scenes_pred_dict, scene_gt_dict, intervals):
         metrics['MIAE'] =  torch.cat([metrics['MIAE'], torch.abs(inflow_cnt[:,0]-inflow_cnt[:,1])])
         metrics['MOAE'] = torch.cat([metrics['MOAE'], torch.abs(outflow_cnt[:, 0] - outflow_cnt[:, 1])])
 
-    MAE = torch.mean(torch.abs(metrics['MAE'][:, 0] - metrics['MAE'][:, 1]))
-    MSE = torch.mean((metrics['MAE'][:, 0] - metrics['MAE'][:, 1]) ** 2).sqrt()
+    MAE = safe_mean(torch.abs(metrics['MAE'][:, 0] - metrics['MAE'][:, 1]))
+    MSE = safe_mean((metrics['MAE'][:, 0] - metrics['MAE'][:, 1]) ** 2).sqrt()
     WRAE = torch.sum(metrics['WRAE'][:,0]*(metrics['WRAE'][:,1]/(metrics['WRAE'][:,1].sum()+1e-10)))*100
-    MIAE = torch.mean(metrics['MIAE'] )
-    MOAE = torch.mean(metrics['MOAE'])
+    MIAE = safe_mean(metrics['MIAE'] )
+    MOAE = safe_mean(metrics['MOAE'])
 
-    return MAE,MSE, WRAE,MIAE,MOAE,metrics['MAE']
+    return MAE, MSE, WRAE, MIAE, MOAE, metrics['MAE']
 
 def local_maximum_points(sub_pre, gaussian_maximun, radius=8.):
     sub_pre = sub_pre.detach()

@@ -8,312 +8,12 @@ from  torchvision import models
 from .conv import ResBlock
 BatchNorm2d = nn.BatchNorm2d
 from model.necks import FPN
-__all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
-           'resnet152']
 BN_MOMENTUM = 0.01
-model_urls = {
-    'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
-    'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
-    'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
-    'resnet101': 'https://download.pytorch.org/models/resnet101-5d3mb4d8f.pth',
-    'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
-}
 
-
-def conv3x3(in_planes, out_planes, stride=1):
-    """3x3 convolution with padding"""
-    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
-                     padding=1, bias=False)
-
-
-class BasicBlock(nn.Module):
-    expansion = 1
-
-    def __init__(self, inplanes, planes, stride=1, downsample=None):
-        super(BasicBlock, self).__init__()
-        self.conv1 = conv3x3(inplanes, planes, stride)
-        self.bn1 = nn.BatchNorm2d(planes)
-        self.relu = nn.ReLU(inplace=True)
-        self.conv2 = conv3x3(planes, planes)
-        self.bn2 = nn.BatchNorm2d(planes)
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        residual = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-
-        if self.downsample is not None:
-            residual = self.downsample(x)
-
-        out += residual
-        out = self.relu(out)
-
-        return out
-
-
-class Bottleneck(nn.Module):
-    expansion = 4
-
-    def __init__(self, inplanes, planes, stride=1, downsample=None):
-        super(Bottleneck, self).__init__()
-        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
-                               padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(planes)
-        self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(planes * 4)
-        self.relu = nn.ReLU(inplace=True)
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        residual = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-        out = self.relu(out)
-
-        out = self.conv3(out)
-        out = self.bn3(out)
-
-        if self.downsample is not None:
-            residual = self.downsample(x)
-
-        out += residual
-        out = self.relu(out)
-
-        return out
-
-
-class ResNet(nn.Module):
-
-    def __init__(self, block, layers, num_classes=7, scale=1):
-        self.inplanes = 64
-        super(ResNet, self).__init__()
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
-                               bias=False)
-        self.bn1 = nn.BatchNorm2d(64)
-        self.relu1 = nn.ReLU(inplace=True)
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-        self.layer1 = self._make_layer(block, 64, layers[0])
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
-        # self.avgpool = nn.AvgPool2d(7, stride=1)
-        # self.fc = nn.Linear(512 * block.expansion, num_classes)
-
-        # Top layer
-        self.toplayer = nn.Conv2d(2048, 256, kernel_size=1, stride=1, padding=0)  # Reduce channels
-        self.toplayer_bn = nn.BatchNorm2d(256)
-        self.toplayer_relu = nn.ReLU(inplace=True)
-
-        # Smooth layers
-        self.smooth1 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
-        self.smooth1_bn = nn.BatchNorm2d(256)
-        self.smooth1_relu = nn.ReLU(inplace=True)
-
-        self.smooth2 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
-        self.smooth2_bn = nn.BatchNorm2d(256)
-        self.smooth2_relu = nn.ReLU(inplace=True)
-
-        self.smooth3 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
-        self.smooth3_bn = nn.BatchNorm2d(256)
-        self.smooth3_relu = nn.ReLU(inplace=True)
-
-        # Lateral layers
-        self.latlayer1 = nn.Conv2d(1024, 256, kernel_size=1, stride=1, padding=0)
-        self.latlayer1_bn = nn.BatchNorm2d(256)
-        self.latlayer1_relu = nn.ReLU(inplace=True)
-
-        self.latlayer2 = nn.Conv2d(512, 256, kernel_size=1, stride=1, padding=0)
-        self.latlayer2_bn = nn.BatchNorm2d(256)
-        self.latlayer2_relu = nn.ReLU(inplace=True)
-
-        self.latlayer3 = nn.Conv2d(256, 256, kernel_size=1, stride=1, padding=0)
-        self.latlayer3_bn = nn.BatchNorm2d(256)
-        self.latlayer3_relu = nn.ReLU(inplace=True)
-
-        self.conv2 = nn.Conv2d(1024, 256, kernel_size=3, stride=1, padding=1)
-        self.bn2 = nn.BatchNorm2d(256)
-        self.relu2 = nn.ReLU(inplace=True)
-        self.conv3 = nn.Conv2d(256, num_classes, kernel_size=1, stride=1, padding=0)
-
-        self.scale = scale
-
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
-            elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
-
-    def _make_layer(self, block, planes, blocks, stride=1):
-        downsample = None
-        if stride != 1 or self.inplanes != planes * block.expansion:
-            downsample = nn.Sequential(
-                nn.Conv2d(self.inplanes, planes * block.expansion,
-                          kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(planes * block.expansion),
-            )
-
-        layers = []
-        layers.append(block(self.inplanes, planes, stride, downsample))
-        self.inplanes = planes * block.expansion
-        for i in range(1, blocks):
-            layers.append(block(self.inplanes, planes))
-
-        return nn.Sequential(*layers)
-
-    def _upsample(self, x, y, scale=1):
-        _, _, H, W = y.size()
-        return F.upsample(x, size=(H // scale, W // scale), mode='bilinear')
-
-    def _upsample_add(self, x, y):
-        _, _, H, W = y.size()
-        return F.upsample(x, size=(H, W), mode='bilinear') + y
-
-    def forward(self, x):
-        h = x
-        h = self.conv1(h)
-        h = self.bn1(h)
-        h = self.relu1(h)
-        h = self.maxpool(h)
-
-        h = self.layer1(h)
-        c2 = h
-        h = self.layer2(h)
-        c3 = h
-        h = self.layer3(h)
-        c4 = h
-        h = self.layer4(h)
-        c5 = h
-
-        # Top-down
-        p5 = self.toplayer(c5)
-        p5 = self.toplayer_relu(self.toplayer_bn(p5))
-
-        c4 = self.latlayer1(c4)
-        c4 = self.latlayer1_relu(self.latlayer1_bn(c4))
-        p4 = self._upsample_add(p5, c4)
-        p4 = self.smooth1(p4)
-        p4 = self.smooth1_relu(self.smooth1_bn(p4))
-
-        c3 = self.latlayer2(c3)
-        c3 = self.latlayer2_relu(self.latlayer2_bn(c3))
-        p3 = self._upsample_add(p4, c3)
-        p3 = self.smooth2(p3)
-        p3 = self.smooth2_relu(self.smooth2_bn(p3))
-
-        c2 = self.latlayer3(c2)
-        c2 = self.latlayer3_relu(self.latlayer3_bn(c2))
-        p2 = self._upsample_add(p3, c2)
-        p2 = self.smooth3(p2)
-        p2 = self.smooth3_relu(self.smooth3_bn(p2))
-
-        p3 = self._upsample(p3, p2)
-        p4 = self._upsample(p4, p2)
-        p5 = self._upsample(p5, p2)
-
-        out = torch.cat((p2, p3, p4, p5), 1)
-        out = self.conv2(out)
-        out = self.relu2(self.bn2(out))
-        out = self.conv3(out)
-        out = self._upsample(out, x, scale=self.scale)
-
-        return out
-
-
-def resnet18(pretrained=False, **kwargs):
-    """Constructs a ResNet-18 model.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet(BasicBlock, [2, 2, 2, 2], **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet18']))
-    return model
-
-
-def resnet34(pretrained=False, **kwargs):
-    """Constructs a ResNet-34 model.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet(BasicBlock, [3, 4, 6, 3], **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet34']))
-    return model
-
-
-def resnet50(pretrained=False, **kwargs):
-    """Constructs a ResNet-50 model.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
-    if pretrained:
-        pretrained_model = model_zoo.load_url(model_urls['resnet50'])
-        state = model.state_dict()
-        for key in state.keys():
-            if key in pretrained_model.keys():
-                state[key] = pretrained_model[key]
-        model.load_state_dict(state)
-    return model
-
-
-def resnet101(pretrained=False, **kwargs):
-    """Constructs a ResNet-101 model.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
-    if pretrained:
-        pretrained_model = model_zoo.load_url(model_urls['resnet101'])
-        state = model.state_dict()
-        for key in state.keys():
-            if key in pretrained_model.keys():
-                state[key] = pretrained_model[key]
-        model.load_state_dict(state)
-    return model
-
-
-def resnet152(pretrained=False, **kwargs):
-    """Constructs a ResNet-152 model.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet(Bottleneck, [3, 8, 36, 3], **kwargs)
-    if pretrained:
-        pretrained_model = model_zoo.load_url(model_urls['resnet152'])
-        state = model.state_dict()
-        for key in state.keys():
-            if key in pretrained_model.keys():
-                state[key] = pretrained_model[key]
-        model.load_state_dict(state)
-    return model
-
-class ResNet_50_FPN_Encoder(nn.Module):
-    def __init__(self, pretrained=True):
-        super(ResNet_50_FPN_Encoder, self).__init__()
-        resnet_50 = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
+class ResNet50FPN_Stride16(nn.Module):
+    def __init__(self):
+        super(ResNet50FPN_Stride16, self).__init__()
+        resnet_50 = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
         self.conv1 = resnet_50.conv1
         self.bn1 = resnet_50.bn1
         self.relu = resnet_50.relu
@@ -360,7 +60,155 @@ class ResNet_50_FPN_Encoder(nn.Module):
         outputs.append(feature)
         return outputs
 
-if __name__ == '__main__':
-    model = resnet50(pretrained=True, num_classes=7)
-    print(model)
-    summary(model, (3, 224, 224))
+
+class ResNet50FPN_Stride8(nn.Module):
+    def __init__(self, pretrained=True):
+        super(ResNet50FPN_Stride8, self).__init__()
+
+        # 1. 加载 ImageNet 预训练的 ResNet50 Backbone
+        print(f"Loading ResNet50 ImageNet weights: {pretrained}")
+        # 使用新版 torchvision 写法 (如果报错可改为 models.resnet50(pretrained=True))
+        weights = models.ResNet50_Weights.DEFAULT if pretrained else None
+        resnet = models.resnet50(weights=weights)
+
+        # 提取 ResNet 的各层
+        self.conv1 = resnet.conv1
+        self.bn1 = resnet.bn1
+        self.relu1 = resnet.relu
+        self.maxpool = resnet.maxpool
+        
+        self.layer1 = resnet.layer1 # C2: Stride 4,  256 channels
+        self.layer2 = resnet.layer2 # C3: Stride 8,  512 channels
+        self.layer3 = resnet.layer3 # C4: Stride 16, 1024 channels
+        self.layer4 = resnet.layer4 # C5: Stride 32, 2048 channels
+
+        # 2. FPN 模块构建 (Conv + BN + ReLU)
+        fpn_dim = 256
+
+        # Top layer (处理 C5)
+        self.toplayer = nn.Sequential(
+            nn.Conv2d(2048, fpn_dim, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.BatchNorm2d(fpn_dim),
+            nn.ReLU(inplace=True)
+        )
+
+        # Lateral layers (处理 C4, C3, C2)
+        self.latlayer1 = nn.Sequential(
+            nn.Conv2d(1024, fpn_dim, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.BatchNorm2d(fpn_dim),
+            nn.ReLU(inplace=True)
+        )
+        self.latlayer2 = nn.Sequential(
+            nn.Conv2d(512, fpn_dim, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.BatchNorm2d(fpn_dim),
+            nn.ReLU(inplace=True)
+        )
+        self.latlayer3 = nn.Sequential(
+            nn.Conv2d(256, fpn_dim, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.BatchNorm2d(fpn_dim),
+            nn.ReLU(inplace=True)
+        )
+
+        # Smooth layers (消除混叠)
+        self.smooth1 = nn.Sequential(
+            nn.Conv2d(fpn_dim, fpn_dim, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.BatchNorm2d(fpn_dim),
+            nn.ReLU(inplace=True)
+        )
+        self.smooth2 = nn.Sequential(
+            nn.Conv2d(fpn_dim, fpn_dim, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.BatchNorm2d(fpn_dim),
+            nn.ReLU(inplace=True)
+        )
+        self.smooth3 = nn.Sequential(
+            nn.Conv2d(fpn_dim, fpn_dim, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.BatchNorm2d(fpn_dim),
+            nn.ReLU(inplace=True)
+        )
+
+        # 3. 最终融合层 (Fusion to 256 channels)
+        # 输入: 4个层级拼接 (256*4 = 1024) -> 输出: 256
+        self.fusion_conv = nn.Sequential(
+            nn.Conv2d(fpn_dim * 4, fpn_dim, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.BatchNorm2d(fpn_dim),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(fpn_dim, 256, kernel_size=1, stride=1, padding=0)
+        )
+
+        # 权重初始化 (Backbone 已经有预训练权重，只需初始化新加的层)
+        self._init_new_layers()
+
+    def _init_new_layers(self):
+        # 仅初始化非 backbone 的部分
+        for m in [self.toplayer, self.latlayer1, self.latlayer2, self.latlayer3,
+                  self.smooth1, self.smooth2, self.smooth3, self.fusion_conv]:
+            for layer in m.modules():
+                if isinstance(layer, nn.Conv2d):
+                    nn.init.kaiming_normal_(layer.weight, mode='fan_out', nonlinearity='relu')
+                elif isinstance(layer, nn.BatchNorm2d):
+                    nn.init.constant_(layer.weight, 1)
+                    nn.init.constant_(layer.bias, 0)
+
+    def _upsample_add(self, x, y):
+        '''将 x 上采样并与 y 相加'''
+        _, _, H, W = y.size()
+        return F.interpolate(x, size=(H, W), mode='bilinear', align_corners=False) + y
+
+    def forward(self, x):
+        # --- Bottom-up Backbone ---
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu1(x)
+        x = self.maxpool(x)
+
+        c2 = self.layer1(x)   # Stride 4
+        c3 = self.layer2(c2)  # Stride 8
+        c4 = self.layer3(c3)  # Stride 16
+        c5 = self.layer4(c4)  # Stride 32
+
+        # --- Top-down FPN ---
+        # P5
+        p5 = self.toplayer(c5)
+        
+        # P4
+        p4 = self._upsample_add(p5, self.latlayer1(c4))
+        p4_smooth = self.smooth1(p4)
+
+        # P3
+        p3 = self._upsample_add(p4, self.latlayer2(c3))
+        p3_smooth = self.smooth2(p3)
+
+        # P2
+        p2 = self._upsample_add(p3, self.latlayer3(c2))
+        p2_smooth = self.smooth3(p2)
+
+        # 此时:
+        # p2_smooth: Stride 4
+        # p3_smooth: Stride 8
+        # p4_smooth: Stride 16
+        # p5:        Stride 32 (注意: p5通常不加smooth conv，或者在输出前加，这里直接复用)
+
+        # --- Multi-scale Fusion (Target: Stride 8) ---
+        
+        # 1. P2 (Stride 4) -> 下采样 -> Stride 8
+        # 使用平均池化进行下采样
+        feat_s8_p2 = F.avg_pool2d(p2_smooth, kernel_size=2, stride=2)
+
+        # 2. P3 (Stride 8) -> 保持不变 -> Stride 8
+        feat_s8_p3 = p3_smooth
+
+        # 3. P4 (Stride 16) -> 上采样 2倍 -> Stride 8
+        feat_s8_p4 = F.interpolate(p4_smooth, scale_factor=2, mode='bilinear', align_corners=False)
+
+        # 4. P5 (Stride 32) -> 上采样 4倍 -> Stride 8
+        feat_s8_p5 = F.interpolate(p5, scale_factor=4, mode='bilinear', align_corners=False)
+
+        # --- Concatenation ---
+        # [B, 256*4, H/8, W/8]
+        out = torch.cat([feat_s8_p2, feat_s8_p3, feat_s8_p4, feat_s8_p5], dim=1)
+
+        # --- Fusion Layer ---
+        # [B, 1024, H/8, W/8] -> [B, 256, H/8, W/8]
+        out = self.fusion_conv(out)
+
+        return out

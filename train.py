@@ -1,26 +1,35 @@
 import os
+from config import cfg
+os.environ["CUDA_VISIBLE_DEVICES"] = cfg.GPU_ID
 import torch
-import datasets
+import cusdatasets
 import numpy as np
 from tqdm import tqdm
 from misc import tools
-from config import cfg
 from torch import optim
+from mmcv import Config
 from misc.utils import *
 from copy import deepcopy
 import torch.nn.functional as F
 from model.points_from_den import *
+from importlib import import_module
 from torch.nn import SyncBatchNorm
 from model.VIC import Video_Counter
 from misc.tools import is_main_process
 import timm.optim.optim_factory as optim_factory
+from model.density_estimator.MyCounter import CustomedCounter
+from model.density_estimator.STEERER.build_counter import Baseline_Counter as STEERER
 class Trainer():
     def __init__(self, cfg_data, pwd):
         self.exp_name = cfg.EXP_NAME
         self.exp_path = cfg.EXP_PATH
         self.pwd = pwd
-        self.model = self.model_without_ddp = Video_Counter(cfg, cfg_data)
-        self.model.cuda()
+        self.model = self.model_without_ddp = Video_Counter(cfg, cfg_data).cuda()
+        if cfg.MODEL == "GD3A":
+            if is_main_process():
+                self.load_global_counter()
+        elif cfg.MODEL == "SDNet":
+            self.global_counter = None
         self.val_frame_intervals = cfg_data.VAL_FRAME_INTERVALS
         if cfg.distributed:
             sync_model = SyncBatchNorm.convert_sync_batchnorm(self.model)
@@ -28,12 +37,22 @@ class Trainer():
                 sync_model, device_ids=[cfg.gpu], find_unused_parameters=False)
             self.model_without_ddp = self.model.module
         self.train_loader, self.sampler_train, self.val_loader, self.restore_transform = \
-                datasets.loading_data(cfg.DATASET, self.val_frame_intervals, cfg.distributed, is_main_process())
-        param_groups = optim_factory.add_weight_decay(self.model_without_ddp, cfg.WEIGHT_DECAY)
-        self.optimizer = optim.Adam(param_groups, lr=cfg.LR_Base)
+                cusdatasets.loading_data(cfg.DATASET, self.val_frame_intervals, cfg.distributed, cfg.MODEL, is_main_process())
+        
+        if cfg.MODEL == "GD3A":
+            param_groups = [
+                {"params": [p for n, p in self.model_without_ddp.named_parameters() if 'dustbin_score' not in n and 'gnn' not in n], 'lr': cfg.LR_Base, 'weight_decay': cfg.WEIGHT_DECAY},
+                {"params": [p for n, p in self.model_without_ddp.named_parameters() if 'dustbin_score' in n or 'gnn' in n], "lr": cfg.LR_Thre, 'weight_decay': cfg.WEIGHT_DECAY},
+            ]
+            self.optimizer = optim.Adam(param_groups)
+        elif cfg.MODEL == "SDNet":
+            param_groups = optim_factory.add_weight_decay(self.model_without_ddp, cfg.WEIGHT_DECAY)
+            self.optimizer = optim.Adam(param_groups, lr=cfg.LR_Base)
+        
         self.i_tb = 0
         self.epoch = 1
         self.num_iters = cfg.MAX_EPOCH * int(len(self.train_loader))
+        self.warmup_steps = int(0.05 * self.num_iters)
         self.timer={'iter time': Timer(), 'train time': Timer(), 'val time': Timer()}
         self.train_record = {'best_model_name': '', 'mae': 1e20, 'mse': 1e20, 'seq_MAE':1e20, 'WRAE':1e20, 'MIAE': 1e20, 'MOAE': 1e20, 'share_mae':1e20, 'share_mse':1e20}
         if cfg.RESUME:
@@ -46,7 +65,7 @@ class Trainer():
             self.exp_path = latest_state['exp_path']
             self.exp_name = latest_state['exp_name']
             print("Finish loading resume mode")
-        if cfg.PRE_TRAIN_COUNTER:
+        if cfg.MODEL == "SDNet" and cfg.PRE_TRAIN_COUNTER:
             counting_pre_train = torch.load(cfg.PRE_TRAIN_COUNTER)
             model_dict = self.model.state_dict()
             new_dict = {}
@@ -64,8 +83,25 @@ class Trainer():
                             new_dict[k] = v 
             model_dict.update(new_dict)
             self.model.load_state_dict(model_dict, strict=True)
+        if cfg.PRE_TRAINED_MODEL:
+            pre_trained_model = torch.load(cfg.PRE_TRAINED_MODEL, map_location='cpu')
+            new_state_dict = {}
+            is_module = all(k.startswith('module.') for k in pre_trained_model.keys())
+            
+            if is_module and not cfg.distributed:
+                for k, v in pre_trained_model.items():
+                    new_state_dict[k.replace('module.', '', 1)] = v
+            elif not is_module and cfg.distributed:
+                for k, v in pre_trained_model.items():
+                    new_state_dict['module.' + k] = v
+            else:
+                new_state_dict = pre_trained_model
+
+            self.model.load_state_dict(new_state_dict, strict=True)
+            print("Pre-trained model loaded.")
+                    
         if is_main_process():
-            self.writer, self.log_txt = logger(self.exp_path, self.exp_name, self.pwd, ['exp','eval','figure','img', 'vis','output', 'exp_backup', 'pre_train_model', 'visual_results'], resume=cfg.RESUME)
+            self.writer, self.log_txt = logger(self.exp_path, self.exp_name, self.pwd, ['exp','eval','figure','img', 'vis','output', 'test_results', 'pre_train_model'], resume=cfg.RESUME)
 
     def forward(self):
         for epoch in range(self.epoch, cfg.MAX_EPOCH + 1):
@@ -88,7 +124,10 @@ class Trainer():
 
     def train(self): # training for all datasets
         self.model.train()
-        lr = adjust_learning_rate(self.optimizer, cfg.LR_Base, self.num_iters, self.i_tb)
+        if cfg.MODEL == "GD3A":
+            lr1, lr2 = adjust_learning_rate(self.optimizer, cfg.LR_Base, cfg.LR_Thre, self.num_iters, self.i_tb)
+        elif cfg.MODEL == "SDNet":
+            lr = adjust_base_learning_rate(self.optimizer, cfg.LR_Base, self.num_iters, self.i_tb)
         batch_loss = {}
         for i, data in enumerate(self.train_loader, 0):
             self.timer['iter time'].tic()
@@ -100,7 +139,13 @@ class Trainer():
                         target[i][key]=data.cuda()
             img = img.cuda()
 
-            pre_global_den, gt_global_den, pre_share_den, gt_share_den, pre_in_out_den, gt_in_out_den, loss_dict = self.model(img, target)
+            if cfg.MODEL == "GD3A":
+                pre_global_den, gt_global_den, pre_share_den, gt_share_den, \
+                pre_in_out_den, gt_in_out_den, loss_dict, matched_results, matched_metrics = self.model(img, target)
+            elif cfg.MODEL == "SDNet":
+                pre_global_den, gt_global_den, pre_share_den, gt_share_den, \
+                pre_in_out_den, gt_in_out_den, loss_dict = self.model(img, target)
+                
             pre_global_cnt = pre_global_den.sum()
             gt_global_cnt = gt_global_den.sum()
 
@@ -112,7 +157,8 @@ class Trainer():
             self.optimizer.step()
 
             loss_dict_reduced = reduce_dict(loss_dict)
-
+            if cfg.MODEL == "GD3A":
+                matched_metrics_reduced = reduce_dict(matched_metrics)
             for k, v in loss_dict_reduced.items():
                 if not k in batch_loss:
                     batch_loss[k] = AverageMeter()
@@ -120,24 +166,36 @@ class Trainer():
 
             if (self.i_tb) % cfg.PRINT_FREQ == 0:
                 if is_main_process():
-                    self.writer.add_scalar('lr', lr, self.i_tb)
+                    if cfg.MODEL == "GD3A":
+                        self.writer.add_scalar('lr1', lr1, self.i_tb)
+                        self.writer.add_scalar('lr2', lr2, self.i_tb)
+                        self.writer.add_scalar('accuracy', matched_metrics_reduced['accuracy'], self.i_tb)
+                        self.writer.add_scalar('precision', matched_metrics_reduced['precision'], self.i_tb)
+                        self.writer.add_scalar('recall', matched_metrics_reduced['recall'], self.i_tb)
+                        self.writer.add_scalar('f1', matched_metrics_reduced['f1'], self.i_tb)
+                    elif cfg.MODEL == "SDNet":
+                        self.writer.add_scalar('lr', lr, self.i_tb)
                     for k, v in loss_dict_reduced.items():
                         self.writer.add_scalar(k, v.item(), self.i_tb)
+                    
                     self.timer['iter time'].toc(average=False)
 
                     loss_str = ''.join([f"[loss_{key} {value.avg:.4f}]" for key, value in batch_loss.items()])
                     print(f"[ep {self.epoch}][it {self.i_tb}]{loss_str}[{self.timer['iter time'].diff:.2f}s]")
                     
-                    print('[cnt: gt: %.1f pred: %.1f max_pre: %.1f max_gt: %.1f]  ' %
-                            (gt_global_cnt.item(), pre_global_cnt.item(), pre_global_den.max().item()*cfg_data.DEN_FACTOR, gt_global_den.max().item()*cfg_data.DEN_FACTOR))
-                    
+                    if cfg.MODEL == "GD3A":
+                        print('[gt_count_diff: %.1f pre_count_diff: %.1f] ' %
+                                (matched_results['gt_count_diff'], matched_results['pre_count_diff']))
+                    elif cfg.MODEL == "SDNet":
+                        print('[cnt: gt: %.1f pred: %.1f max_pre: %.1f max_gt: %.1f]  ' %
+                         (gt_global_cnt.item(), pre_global_cnt.item(), pre_global_den.max().item()*cfg_data.DEN_FACTOR, gt_global_den.max().item()*cfg_data.DEN_FACTOR))
                     
             if (self.i_tb) % 100 == 0:
                 save_visual_results([img, gt_global_den, pre_global_den, gt_share_den, pre_share_den, 
                                     gt_in_out_den, pre_in_out_den], self.restore_transform, 
                                     os.path.join(self.exp_path, self.exp_name, "training_visual"), 
                                     self.i_tb,
-                                    int(os.environ['RANK']) if 'RANK' in os.environ else 0)
+                                    int(os.environ['RANK']) if 'RANK' in os.environ else 0, mode='train')
 
     def validate(self):
         self.model.eval()
@@ -175,12 +233,13 @@ class Trainer():
                         img = F.pad(img, pad_dims, "constant")
                         h, w = img.size(2), img.size(3)
                         place_holder_img = torch.zeros((1, h, w)).cuda()
-
+        
                         if cfg.distributed:
-                            pre_global_den, gt_global_den, pre_share_den, gt_share_den, pre_in_out_den, gt_in_out_den, loss_dict = self.model.module(img, label)
+                            pre_global_den, gt_global_den, pre_share_den, gt_share_den, pre_in_out_den, gt_in_out_den, *extra = self.model.module(img, label, self.global_counter)
                         else:
-                            pre_global_den, gt_global_den, pre_share_den, gt_share_den, pre_in_out_den, gt_in_out_den, loss_dict = self.model(img, label)
-                        pre_in_out_den[pre_in_out_den < 0] = 0
+                            pre_global_den, gt_global_den, pre_share_den, gt_share_den, pre_in_out_den, gt_in_out_den, *extra  = self.model(img, label, self.global_counter)
+                        if cfg.MODEL == "SDNet":
+                            pre_in_out_den[pre_in_out_den < 0] = 0
                         #    -----------Counting performance------------------
                         gt_global_cnt, pre_global_cnt = gt_global_den[0].sum().item(),  pre_global_den[0].sum().item()
 
@@ -250,27 +309,51 @@ class Trainer():
         mse = np.sqrt(global_cnt_errors['mse'].avg)
 
         self.train_record = update_model(self, {'mae':mae, 'mse':mse, 'seq_MAE':MAE, 'WRAE':WRAE, 'MIAE': MIAE, 'MOAE': MOAE })
-
-        print_NWPU_summary_det(self, {'mae':mae, 'mse':mse, 'seq_MAE':MAE, 'WRAE':WRAE, 'MIAE': MIAE, 'MOAE': MOAE})
         torch.cuda.empty_cache()
+
+    def load_global_counter(self):
+        if cfg.global_counter == 'customed':
+            global_counter = CustomedCounter()
+        elif cfg.global_counter == 'STEERER':
+            counter_config = Config.fromfile("model/density_estimator/STEERER/configs/MDC.py")
+            global_counter = STEERER(counter_config.network, 
+                                            counter_config.dataset.den_factor, 
+                                            counter_config.train.route_size)
+        else:
+            raise NotImplementedError
+        self.global_counter = global_counter.cuda()
+
+        global_counter_dict = {}     
+        if cfg.pre_trained_global_counter:
+            global_counter_pretrained_dict = torch.load(cfg.pre_trained_global_counter, map_location='cpu')
+            for k, v in global_counter_pretrained_dict.items():
+                if cfg.global_counter == 'customed':
+                    if 'Extractor' in k or 'global_decoder' in k:
+                        if k.startswith("module."):
+                            global_counter_dict[k[7:]] = v 
+                        else:
+                            global_counter_dict[k] = v 
+                else:
+                    if k.startswith("module."):
+                        global_counter_dict[k[7:]] = v 
+                    else:
+                        global_counter_dict[k] = v 
+
+        self.global_counter.load_state_dict(global_counter_dict, strict=True)
+        self.global_counter.eval()
+        print("Global counter loaded.")
+        
         
 if __name__=='__main__':
-    import os
-    import numpy as np
-    import torch
-    import datasets
-    from config import cfg
-    from importlib import import_module
     # ------------prepare enviroment------------
     tools.init_distributed_mode(cfg)
     tools.set_randomseed(cfg.SEED + tools.get_rank())
-
     torch.backends.cudnn.benchmark = True
     torch.backends.cudnn.enabled = True
-
+    
     # ------------prepare data loader------------
     data_mode = cfg.DATASET
-    datasetting = import_module(f'datasets.setting.{data_mode}')
+    datasetting = import_module(f'cusdatasets.setting.{data_mode}')
     cfg_data = datasetting.cfg_data
 
     # ------------Start Training------------
