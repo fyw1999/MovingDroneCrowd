@@ -170,11 +170,12 @@ The pretrained global density-map estimation models for SDNet are available from
 
 | Dataset | Pretrained counter |
 | --- | --- |
-| MovingDroneCrowd++ | [SDNet_pre_trained_counter_mdc++_ep_150_downscale_16.pth](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_pre_trained_counter_mdc%2B%2B_ep_150_downscale_16.pth) |
-| VSCrowd | [SDNet_pre_trained_counter_vscrowd_ep_100_downscale_16.pth](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_pre_trained_counter_vscrowd_ep_100_downscale_16.pth) |
+| MovingDroneCrowd | [SDNet_pre_trained_counter_MDC_VGG16_FPN_ep_200_downscale_16.pth](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_pre_trained_counter_MDC_VGG16_FPN_ep_200_downscale_16.pth) |
+| MovingDroneCrowd++ | [SDNet_pre_trained_counter_MDC++_VGG16_FPN_ep_150_downscale_16.pth](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_pre_trained_counter_MDC%2B%2B_VGG16_FPN_ep_150_downscale_16.pth) |
+| VSCrowd | [SDNet_pre_trained_counter_VSCrowd_VGG16_FPN_ep_100_downscale_16.pth](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_pre_trained_counter_VSCrowd_VGG16_FPN_ep_100_downscale_16.pth) |
 
 ```python
-__C.PRE_TRAIN_COUNTER = "/path/to/SDNet_pre_trained_counter_mdc++_ep_150_downscale_16.pth"
+__C.PRE_TRAIN_COUNTER = "/path/to/SDNet_pre_trained_counter_MDC++_VGG16_FPN_ep_150_downscale_16.pth"
 
 __C.LR_Base = 1e-5
 __C.WEIGHT_DECAY = 1e-6
@@ -206,12 +207,12 @@ The pretrained global counters for GD<sup>3</sup>A are available from [fyw1999/M
 
 | Dataset | Counter | Pretrained global counter |
 | --- | --- | --- |
-| MovingDroneCrowd++ | STEERER | [GD3A_pre_trained_global_counter_STEERER_MDC++_Ep_201_mae_13.5_mse_19.1.pth](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/GD3A_pre_trained_global_counter_STEERER_MDC%2B%2B_Ep_201_mae_13.5_mse_19.1.pth) |
-| VSCrowd | customed | [GD3A_pre_trained_global_counter_costumed_VSCrowd_kernel_size_25_epoch_50.pth](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/GD3A_pre_trained_global_counter_costumed_VSCrowd_kernel_size_25_epoch_50.pth) |
+| MovingDroneCrowd++ | STEERER | [GD3A_pre_trained_global_counter_STEERER_MDC++_ep_201_mae_13.5_mse_19.1.pth](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/GD3A_pre_trained_global_counter_STEERER_MDC%2B%2B_ep_201_mae_13.5_mse_19.1.pth) |
+| VSCrowd | customed | [GD3A_pre_trained_global_counter_VGG16_FPN_VSCrowd_kernel_size_25_epoch_50.pth](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/GD3A_pre_trained_global_counter_VGG16_FPN_VSCrowd_kernel_size_25_epoch_50.pth) |
 
 ```python
 __C.global_counter = "STEERER"  # "STEERER" or "customed"
-__C.pre_trained_global_counter = "/path/to/GD3A_pre_trained_global_counter_STEERER_MDC++_Ep_201_mae_13.5_mse_19.1.pth"
+__C.pre_trained_global_counter = "/path/to/GD3A_pre_trained_global_counter_STEERER_MDC++_ep_201_mae_13.5_mse_19.1.pth"
 
 __C.LR_Base = 5e-5
 __C.LR_Thre = 1e-4
@@ -309,8 +310,8 @@ Download links will be updated for the released pretrained models.
 
 | Model | Backbone | Dataset | MAE | RMSE | Download |
 | --- | --- | --- | ---: | ---: | --- |
-| SDNet | VGG | MovingDroneCrowd | 44.33 | 74.53 | [download](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_MDC_best_model_VGG16.pth) |
-| SDNet | VGG | MovingDroneCrowd++ | 76.24 | 160.33 | [download](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_MDC%2B%2B_best_model_VGG16.pth) |
+| SDNet | VGG | MovingDroneCrowd | 44.33 | 74.53 | [download](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_MDC_best_model_VGG16_FPN.pth) |
+| SDNet | VGG | MovingDroneCrowd++ | 76.24 | 160.33 | [download](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_MDC%2B%2B_best_model_VGG16_FPN.pth) |
 | GD<sup>3</sup>A | ResNet | MovingDroneCrowd++ | 40.11 | 71.61 | [download](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/GD3A_MDC%2B%2B_best_model_ResNet50.pth) |
 
 ### ⚠️ Note on Reproduction
