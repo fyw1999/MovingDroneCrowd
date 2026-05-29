@@ -318,6 +318,7 @@ Download links will be updated for the released pretrained models.
 | --- | --- | --- | ---: | ---: | --- |
 | SDNet | VGG | MovingDroneCrowd | 44.33 | 74.53 | [download](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_MDC_best_model_VGG16_FPN.pth) |
 | SDNet | VGG | MovingDroneCrowd++ | 76.24 | 160.33 | [download](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_MDC%2B%2B_best_model_VGG16_FPN.pth) |
+| GD<sup>3</sup>A | VGG | MovingDroneCrowd++ | 45.23 | 73.27 | [download](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/GD3A_MDC%2B%2B_best_model_VGG16.pth) |
 | GD<sup>3</sup>A | ResNet | MovingDroneCrowd++ | 40.11 | 71.61 | [download](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/GD3A_MDC%2B%2B_best_model_ResNet50.pth) |
 
 ### ⚠️ Note on Reproduction
