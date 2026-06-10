@@ -62,9 +62,10 @@ MovingDroneCrowd++/
 +-- MDC_val.txt
 +-- MDC_train.txt
 +-- MDC_test.txt
++-- MDC_scene_labels.txt  # Please download it separately and place it in the MovingDroneCrowd++ folder.
 ```
 
-`val.txt`, `train.txt`, and `test.txt` are the split files for the extended MovingDroneCrowd++ dataset. `MDC_val.txt`, `MDC_train.txt`, and `MDC_test.txt` preserve the split files of the conference-version MovingDroneCrowd dataset for reproducing the ICCV 2025 experiments.
+`val.txt`, `train.txt`, and `test.txt` are the split files for the extended MovingDroneCrowd++ dataset. `MDC_val.txt`, `MDC_train.txt`, `MDC_test.txt`, and `MDC_scene_labels.txt` preserve the split files and scene-level labels of the conference-version MovingDroneCrowd dataset for reproducing the ICCV 2025 experiments.
 
 Each annotation row follows the MOT-style format:
 
