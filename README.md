@@ -326,7 +326,7 @@ Download links will be updated for the released pretrained models.
 
 ### ⚠️ Note on Reproduction
 
-The provided SDNet weight on MovingDroneCrowd, namely the first row in the Model Zoo, was retrained for this repository. Due to the expiration of access to the original training server, the original weights are unavailable. While minor discrepancies exist compared to the published metrics in the paper, the model consistently maintains SOTA performance. To reproduce the results on the MovingDroneCrowd dataset, we recommend using the provided pretrained density-map estimation model. The total batch size, i.e., GPUs times batch size per GPU, should be set to `8`, with training for `120` epochs.
+The provided SDNet weight on MovingDroneCrowd, namely the first row in the Model Zoo, was retrained for this repository. Due to the expiration of access to the original training server, the original weights are unavailable. While minor discrepancies exist compared to the published metrics in the paper, the model consistently maintains SOTA performance. To reproduce the results on the MovingDroneCrowd dataset, we recommend using the provided pretrained density-map estimation model. The total batch size, i.e., GPUs times batch size per GPU, should be set to `8`, with training for `120` epochs. If you have problems reproducing the results of SDNet, please refer to the Issue #13, this may be helpful to you.
 
 ## Citation
 
