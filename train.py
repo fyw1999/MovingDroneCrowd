@@ -46,7 +46,7 @@ class Trainer():
             ]
             self.optimizer = optim.Adam(param_groups)
         elif cfg.MODEL == "SDNet":
-            param_groups = optim_factory.add_weight_decay(self.model_without_ddp, cfg.WEIGHT_DECAY)
+            param_groups = optim_factory.param_groups_weight_decay(self.model_without_ddp, cfg.WEIGHT_DECAY)
             self.optimizer = optim.Adam(param_groups, lr=cfg.LR_Base)
         
         self.i_tb = 0
@@ -83,6 +83,8 @@ class Trainer():
                             new_dict[k] = v 
             model_dict.update(new_dict)
             self.model.load_state_dict(model_dict, strict=True)
+        elif cfg.MODEL == "SDNet":
+            raise NotImplementedError("SDNet should be trained with a pre-trained counter, please set PRE_TRAIN_COUNTER in config.")
         if cfg.PRE_TRAINED_MODEL:
             pre_trained_model = torch.load(cfg.PRE_TRAINED_MODEL, map_location='cpu')
             new_state_dict = {}

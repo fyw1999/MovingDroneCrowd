@@ -125,8 +125,10 @@ conda create -n MovingDroneCrowd python=3.11 -y
 conda activate MovingDroneCrowd
 
 conda install pytorch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 pytorch-cuda=12.4 -c pytorch -c nvidia
+conda install "mkl<2025" "intel-openmp<2025"
 cd ${MovingDroneCrowd}
-pip install -r requirements.txt
+pip install setuptools==60.2.0 wheel packaging "Cython<3" numpy==1.26.4
+pip install --no-build-isolation -r requirements.txt
 ```
 
 - Datasets
@@ -150,7 +152,7 @@ pip install -r requirements.txt
 
   Other dataset parameters, such as split file names and image size settings, can usually keep their default values.
 
-  For GD<sup>3</sup>A, `TRAIN_BATCH_SIZE` can be set to `4` on a 48GB GPU. For SDNet, `TRAIN_BATCH_SIZE` should be set to `1` on a 48GB GPU because it requires more GPU memory.
+  For GD<sup>3</sup>A, `TRAIN_BATCH_SIZE` can be set to `4` on 48GB GPU. For SDNet, `TRAIN_BATCH_SIZE` should be set to `1` on 48GB GPU and `2` on 80GB GPU, because it requires more GPU memory.
 
 ### Training
 
@@ -166,7 +168,7 @@ __C.GPU_ID = "0,1,2,3"
 
 ##### Train SDNet
 
-Set the following parameters in `config.py` before training. We recommend setting `PRE_TRAIN_COUNTER` to the path of a global density-map estimation model pretrained on the corresponding target dataset to accelerate convergence. To maintain good performance, besides setting `PRE_TRAIN_COUNTER`, it is also recommended to keep the global batch size at least `4`.
+Set the following parameters in `config.py` before training. We recommend setting `PRE_TRAIN_COUNTER` to the path of a global density-map estimation model pretrained on the corresponding target dataset to accelerate convergence. To maintain good performance, besides setting `PRE_TRAIN_COUNTER`, it is also recommended to keep the global batch size at least `8`. SDNet is a weakly-supervised algorithm, which inherently has training instability and cannot guarantee that the results of each reproduction will be exactly the same. However, it can ensure that the SOTA performance of the comparison in the original paper. This instability is also one of the reasons for proposing the subsequent GD<sup>3</sup>A.
 
 The pretrained global density-map estimation models for SDNet are available from [fyw1999/MovingDroneCrowd-Weights](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights):
 
@@ -316,14 +318,14 @@ Download links will be updated for the released pretrained models.
 
 | Model | Backbone | Dataset | MAE | RMSE | Download |
 | --- | --- | --- | ---: | ---: | --- |
-| SDNet | VGG | MovingDroneCrowd | 44.33 | 74.53 | [download](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_MDC_best_model_VGG16_FPN.pth) |
+| SDNet | VGG | MovingDroneCrowd | 39.51 | 62.71 | [download](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_MDC_best_model_VGG16_FPN.pth) |
 | SDNet | VGG | MovingDroneCrowd++ | 76.24 | 160.33 | [download](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/SDNet_MDC%2B%2B_best_model_VGG16_FPN.pth) |
 | GD<sup>3</sup>A | VGG | MovingDroneCrowd++ | 45.23 | 73.27 | [download](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/GD3A_MDC%2B%2B_best_model_VGG16.pth) |
 | GD<sup>3</sup>A | ResNet | MovingDroneCrowd++ | 40.11 | 71.61 | [download](https://huggingface.co/fyw1999/MovingDroneCrowd-Weights/resolve/main/GD3A_MDC%2B%2B_best_model_ResNet50.pth) |
 
 ### ⚠️ Note on Reproduction
 
-The provided SDNet weight on MovingDroneCrowd, namely the first row in the Model Zoo, was retrained for this repository. Due to the expiration of access to the original training server, the original weights are unavailable. While minor discrepancies exist compared to the published metrics in the paper, the model consistently maintains SOTA performance. To reproduce the results on the MovingDroneCrowd dataset, we recommend using the provided pretrained density-map estimation model. The total batch size, i.e., GPUs times batch size per GPU, should be set to `4`, with training for `120` epochs.
+The provided SDNet weight on MovingDroneCrowd, namely the first row in the Model Zoo, was retrained for this repository. Due to the expiration of access to the original training server, the original weights are unavailable. While minor discrepancies exist compared to the published metrics in the paper, the model consistently maintains SOTA performance. To reproduce the results on the MovingDroneCrowd dataset, we recommend using the provided pretrained density-map estimation model. The total batch size, i.e., GPUs times batch size per GPU, should be set to `8`, with training for `120` epochs.
 
 ## Citation
 
