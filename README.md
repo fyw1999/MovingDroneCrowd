@@ -249,6 +249,8 @@ torchrun --master_port 29515 --nproc_per_node=4 train.py
 
 `test.py` evaluates SDNet or GD<sup>3</sup>A on MovingDroneCrowd++. The main difference is the value of `MODEL`. For both methods, set `model_path` to the trained SDNet or GD<sup>3</sup>A checkpoint. For GD<sup>3</sup>A, additionally set `counter` to `STEERER` or `customed`, and set `pre_trained_counter_path` to the corresponding pretrained global counter. For SDNet, `counter` and `pre_trained_counter_path` are not needed. Other options such as `output_dir`, `test_name`, `test_visual`, and `GPU_ID` can be changed according to your needs.
 
+> **Note:** Make sure that the model architecture parameters in `config.py`, such as `encoder`, are also configured to match the checkpoint being evaluated.
+
 Example for SDNet:
 
 ```bash
