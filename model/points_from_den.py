@@ -11,26 +11,26 @@ class get_ori_MatchInfo(object):
         
     def mark_duplicate_points(self, a: torch.Tensor) -> torch.Tensor:
         """
-        输入:
-            a: (n, 2) 的张量，表示二维点
-        输出:
-            b: (n,) 的bool张量，True表示该点是重复出现的（非第一次出现）
+        Input:
+            a: An (n, 2) tensor representing 2D points.
+        Output:
+            b: An (n,) Boolean tensor; True indicates a duplicate point (not its first occurrence).
         """
-        assert a.ndim == 2 and a.shape[1] == 2, "输入必须是 (n, 2) 的张量"
+        assert a.ndim == 2 and a.shape[1] == 2, "Input must be an (n, 2) tensor"
         
-        # 1️⃣ 先把二维坐标编码成一维唯一标识
-        # 这里乘一个足够大的常数K保证不会冲突
-        K = int(a[:, 1].max().item()) + 100000  # 防止溢出
+        # 1️⃣ Encode the 2D coordinates as unique 1D identifiers
+        # Multiply by a sufficiently large constant K to avoid collisions
+        K = int(a[:, 1].max().item()) + 100000  # Prevent overflow
         a_code = a[:, 0].long() * K + a[:, 1].long()
         
-        # 2️⃣ 排序以便找到重复项
+        # 2️⃣ Sort the identifiers to find duplicates
         sorted_code, sorted_idx = torch.sort(a_code)
         is_dup_sorted = torch.cat([
             torch.tensor([False], device=a.device),
             sorted_code[1:] == sorted_code[:-1]
         ])
         
-        # 3️⃣ 还原到原始顺序
+        # 3️⃣ Restore the original order
         b = torch.zeros_like(is_dup_sorted)
         b[sorted_idx] = is_dup_sorted
         

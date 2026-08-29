@@ -276,7 +276,7 @@ def save_results_more(iter, exp_path,img0, pre_map0,gt_map0,pre_cnt, gt_cnt, pre
     target = Image.new('RGB', target_shape)
     count = 0
     for img in imgs:
-        x, y = int(count%w_num) * (UNIT_W + 10), int(count // w_num) * (UNIT_H + 10)  # 左上角坐标，从左到右递增
+        x, y = int(count%w_num) * (UNIT_W + 10), int(count // w_num) * (UNIT_H + 10)  # Top-left coordinates, increasing from left to right
         target.paste(img, (x, y, x + UNIT_W, y + UNIT_H))
         count+=1
 

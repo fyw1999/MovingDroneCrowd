@@ -121,7 +121,7 @@ def save_results_more(iter, exp_path, restore, img, pred_map, gt_map, binar_map,
         target = Image.new('RGB', target_shape)
         count = 0
         for img in imgs:
-            x, y = int(count%w_num) * (UNIT_W + 10), int(count // w_num) * (UNIT_H + 10)  # 左上角坐标，从左到右递增
+            x, y = int(count%w_num) * (UNIT_W + 10), int(count // w_num) * (UNIT_H + 10)  # Top-left coordinates, increasing from left to right
             target.paste(img, (x, y, x + UNIT_W, y + UNIT_H))
             count+=1
 
@@ -633,11 +633,11 @@ def show_visual_count(vis_map, count, text):
     import cv2
     text_content = text + ' ' + str(int(count))
 
-    font = cv2.FONT_HERSHEY_TRIPLEX  # 这种字体在超大字号下依然很稳重
-    font_scale = 4                   # 您要求的字体大小
-    font_thickness = 5               # 【关键】白色主体必须加粗，否则看不清
+    font = cv2.FONT_HERSHEY_TRIPLEX  # This font remains legible at very large sizes
+    font_scale = 4                   # Requested font size
+    font_thickness = 5               # The white foreground must be bold enough to remain visible
     outline_thickness = 10  
-    position = (50, 150)       # 位置 (x, y)，坐标原点在左上角。这里设为距离左边30像素，距离上边50像素
+    position = (50, 150)       # Position (x, y), measured from the top-left corner: 50 px from the left and 150 px from the top
     cv2.putText(vis_map, text_content, position, font, font_scale, (0, 0, 0), outline_thickness, cv2.LINE_AA)
     cv2.putText(vis_map, text_content, position, font, font_scale, (255, 255, 255), font_thickness, cv2.LINE_AA)
     return vis_map

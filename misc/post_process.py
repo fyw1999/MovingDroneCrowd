@@ -12,11 +12,11 @@ class Processor():
         self.tmp_result = {}
     def Dilation(self,binar_map):
 
-        dilated = cv.dilate(binar_map,self.kernel_2)      #膨胀图像
+        dilated = cv.dilate(binar_map,self.kernel_2)      # Dilate the image
         return  dilated
 
     def Erosion(self, binar_map):
-        erosive = cv.erode(binar_map,self.kernel_3)        #腐蚀图像
+        erosive = cv.erode(binar_map,self.kernel_3)        # Erode the image
         return erosive
 
     def morph_open(self, binar_map, iteration=1):
@@ -24,7 +24,7 @@ class Processor():
         # binar_map = cv.morphologyEx(binar_map, cv.MORPH_OPEN, self.kernel_5, iterations=iteration)
         for i in range(iteration):
             binar_map = cv.erode(binar_map, self.kernel_5)
-            binar_map = cv.dilate(binar_map,  self.kernel_3)  # 膨胀图像
+            binar_map = cv.dilate(binar_map,  self.kernel_3)  # Dilate the image
 
 
         return binar_map
@@ -47,7 +47,7 @@ class Processor():
         length = len(recs)
 
         for i in range(length):
-            if i < length-1:   ##检测小框在大框内部
+            if i < length-1:   ## Detect whether a small box is inside a larger box
                 j = i+1
                 index = (recs[i][0]> recs[j:][:,0]) & (recs[i][1]> recs[j:][:,1])\
                         & (recs[i][2]<recs[j:][:,2]) & (recs[i][3]< recs[j:][:,3])

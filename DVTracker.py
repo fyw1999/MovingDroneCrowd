@@ -96,13 +96,13 @@ from skimage.feature import peak_local_max
 class PedestrianTracker:
     def __init__(self, proximity_radius=12, min_votes=1, stride=8.0):
         self.next_id = 0
-        self.proximity_radius = proximity_radius # 描述符距离行人中心多远算属于该行人
-        self.min_votes = min_votes # 两个行人之间最少有多少个特征匹配才建立联系
-        self.stride = stride # 特征图下采样倍数
+        self.proximity_radius = proximity_radius # Maximum descriptor distance from a pedestrian center for assignment
+        self.min_votes = min_votes # Minimum feature matches required to link two pedestrians
+        self.stride = stride # Feature-map downsampling factor
         self.results = []
         
     def _record(self, frame_idx, tid, pos):
-        # 记录时转换回原图坐标
+        # Convert back to original-image coordinates when recording
         self.results.append([
             frame_idx, tid, 
             pos[0] - 3, 
@@ -112,12 +112,12 @@ class PedestrianTracker:
         ])
         
     def _get_peaks(self, density_map):
-        """提取峰值坐标"""
+        """Extract peak coordinates."""
         if isinstance(density_map, torch.Tensor):
             density_map = density_map.detach().cpu().numpy()
         if density_map.ndim == 3: density_map = np.squeeze(density_map)
         
-        # threshold_abs 决定了忽略极小的密度值
+        # threshold_abs controls which very small density values are ignored
         threshold_abs = density_map.max() * 0.1
         peaks = peak_local_max(density_map, min_distance=14, threshold_abs=threshold_abs)
         if len(peaks) > 0:
@@ -125,7 +125,7 @@ class PedestrianTracker:
         return np.empty((0, 2))
 
     def initialize(self, global_map, frame_idx=1):
-        """根据 I0 全局密度图初始化"""
+        """Initialize from the global density map of I0."""
         peaks = self._get_peaks(global_map)
         self.active_tracks = {}
         for p in peaks:
@@ -136,15 +136,15 @@ class PedestrianTracker:
         
     def update(self, G2, matched_results, next_frame_idx):
         """
-        处理两帧之间的跟踪
-        G2: I2 的全局密度图
-        matched_results: 包含 kpts0, kpts1, matches0 (indicesa) 等
+        Track pedestrians between two frames.
+        G2: Global density map of I2.
+        matched_results: Contains kpts0, kpts1, matches0 (indicesa), and related data.
         """
-        # 1. 检测：提取两帧所有的行人位置
-        # 如果是连续处理，I1 的点其实可以在上一轮缓存，这里为了清晰重复提取
+        # 1. Detection: extract all pedestrian positions in the two frames
+        # During sequential processing, I1 points could be cached from the previous iteration; they are re-extracted here for clarity
         pts_dst = self._get_peaks(G2)
 
-        # 2. 转换描述符坐标到原图尺度
+        # 2. Convert descriptor coordinates to the original-image scale
         def to_numpy(x):
             return x.cpu().numpy() if torch.is_tensor(x) else x
 
@@ -153,7 +153,7 @@ class PedestrianTracker:
         indicesa = to_numpy(matched_results['matches0'][0])
         indicesb = to_numpy(matched_results['matches1'][0])
 
-        # 3. 初始化 ID 分配
+        # 3. Initialize ID assignment
         current_src_ids = list(self.active_tracks.keys())
         pts_src = np.array(list(self.active_tracks.values()))
 
@@ -161,18 +161,18 @@ class PedestrianTracker:
             self.active_tracks = {}
             return []
 
-        # 4. 描述符归属关联 (Spatial Assignment)
-        # 找到 I1 每个描述符属于哪个行人中心
+        # 4. Assign descriptors to pedestrians (spatial assignment)
+        # Find the pedestrian center associated with each descriptor in I1
         dist_a2p = cdist(kptsa, pts_src)
         kptsa_owner = np.argmin(dist_a2p, axis=1)
         kptsa_owner[np.min(dist_a2p, axis=1) > self.proximity_radius] = -1
 
-        # 找到 I2 每个描述符属于哪个行人中心
+        # Find the pedestrian center associated with each descriptor in I2
         dist_b2p = cdist(kptsb, pts_dst)
         kptsb_owner = np.argmin(dist_b2p, axis=1)
         kptsb_owner[np.min(dist_b2p, axis=1) > self.proximity_radius] = -1
 
-        # 5. 构建行人级的投票矩阵 (Score Matrix)
+        # 5. Build the pedestrian-level voting matrix (score matrix)
         score_matrix = np.zeros((len(pts_src), len(pts_dst)))
         for i, match_idx_in_b in enumerate(indicesa):
             if match_idx_in_b < 0: continue
@@ -183,45 +183,45 @@ class PedestrianTracker:
             if p_idx_a != -1 and p_idx_b != -1:
                 score_matrix[p_idx_a, p_idx_b] += 1
 
-        # 遍历所有 I2 的描述符匹配关系
+        # Iterate over all descriptor matches in I2
         for i, match_idx_in_a in enumerate(indicesb):
-            # match_idx_in_a 是 I1 中描述符的索引。在某些实现中，不匹配通常设为 -1
+            # match_idx_in_a is the descriptor index in I1; some implementations use -1 for unmatched descriptors
             if match_idx_in_a < 0:
                 continue
             
             person_idx_b = kptsb_owner[i]
             person_idx_a = kptsa_owner[match_idx_in_a]
 
-            # 只有当匹配的两个描述符分别属于 I1 和 I2 的两个行人中心时，才投票
+            # Cast a vote only when both matched descriptors belong to pedestrian centers in I1 and I2
             if person_idx_a != -1 and person_idx_b != -1:
                 score_matrix[person_idx_a, person_idx_b] += 1
                 
-        # 6. 辅助位置约束 (解决由于旋转、形变导致特征匹配较少的情况)
+        # 6. Add a spatial constraint to handle sparse feature matches caused by rotation or deformation
         dist_matrix = cdist(pts_src, pts_dst)
-        # 即使没有特征匹配，如果位置极近，也给一个小权重
+        # Assign a small weight to very close positions even when there are no feature matches
         spatial_bias = 1.0 / (1.0 + dist_matrix / 10) 
         
-        # 最终代价矩阵（负数因为我们要最大化匹配数）
+        # Final cost matrix (negative because the number of matches is maximized)
         cost_matrix = -(score_matrix * 10.0 + spatial_bias)
 
-        # 7. 匈牙利算法求解最优匹配
+        # 7. Use the Hungarian algorithm to find the optimal assignment
         row_indices, col_indices = linear_sum_assignment(cost_matrix)
 
-        # 8. 结果整理与 ID 传递
+        # 8. Organize results and propagate IDs
         new_dst_ids = np.full(len(pts_dst), -1, dtype=int)
 
         for r, c in zip(row_indices, col_indices):
-            # 匹配准则：有特征匹配，或者位置极其接近
+            # Matching criterion: feature matches exist or the positions are extremely close
             if score_matrix[r, c] >= self.min_votes:
                 new_dst_ids[c] = current_src_ids[r]
 
-        # 9. 处理新出现的行人 (Inflow)
+        # 9. Handle newly appearing pedestrians (inflow)
         for i in range(len(pts_dst)):
             if new_dst_ids[i] == -1:
                 new_dst_ids[i] = self.next_id
                 self.next_id += 1
 
-        # 更新缓存用于下一帧
+        # Update the cache for the next frame
         new_active_tracks = {}
         for i in range(len(pts_dst)):
             tid = new_dst_ids[i]
@@ -404,7 +404,7 @@ def test(cfg_data):
 
         if opt.test_visual:
             visual_maps = torch.stack(visual_maps, dim=0)
-            save_test_visual(visual_maps, imgs, np.array(visual_maps_count), scene_name, restore_transform, opt.output_dir, 0, 0)
+            save_test_visual(visual_maps, imgs, scene_name, restore_transform, opt.output_dir, 0, 0, np.array(visual_maps_count))
         scenes_pred_dict['all'].append(pred_dict)
         scenes_gt_dict['all'].append(gt_dict)
         if scene_name in scene_label:
