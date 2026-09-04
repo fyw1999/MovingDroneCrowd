@@ -95,15 +95,21 @@ GD<sup>3</sup>A is a video individual counting method that first establishes pix
 
 By using a pretrained global density map to filter out background descriptors, GD<sup>3</sup>A substantially reduces computational complexity. Compared with existing strict one-to-one matching methods, its group-wise association is much more robust in dense and dynamic scenarios.
 
-<p align="center">
-  <img src="figures/GD3A.png" width="90%" alt="Pipeline of the extended method">
-</p>
-
 GD<sup>3</sup>A requires identity supervision during training. However, it is more interpretable, trains faster, requires less GPU memory, and achieves better performance. Therefore, we recommend using GD<sup>3</sup>A as the preferred method when identity annotations are available.
 
 ### GIA-Track
 
 GIA-Track is built on the group-wise descriptor association of GD<sup>3</sup>A. Without additional training, it converts pixel-level matching into instance-level associations via a voting mechanism, delivering strong tracking performance for dense pedestrians under highly dynamic drone motion.
+
+The unified pipeline of GD<sup>3</sup>A and GIA-Track is illustrated below. GD<sup>3</sup>A performs density map-based video-level counting through group-wise density assignment, while GIA-Track reuses the descriptor correspondences for group-wise identity association without additional training.
+
+<p align="center">
+  <img src="figures/GD3A_GIA_Track_pipeline.png" width="100%" alt="Unified pipeline of GD3A and GIA-Track">
+</p>
+
+<p align="center">
+  <em>Unified pipeline of GD<sup>3</sup>A for video individual counting and GIA-Track for multi-object tracking.</em>
+</p>
 
 ### Method Choice
 
