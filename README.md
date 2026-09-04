@@ -9,19 +9,21 @@
   <a href="https://github.com/fyw1999/MovingDroneCrowd"><img src="https://img.shields.io/badge/Code-PyTorch-ee4c2c.svg" alt="Code"></a>
 </p>
 
+> **Name-change notice:** If this is your first time visiting this repository, you can ignore this notice. For returning users, please note that the tracking method previously called **DVTrack** has been renamed **GIA-Track**. This is a naming-only change; the method and its implementation remain unchanged.
+
 This is the official PyTorch project page for the **MovingDroneCrowd** series. The repository contains both the conference version and the extended version of our work on video individual counting and tracking from moving drones.
 
 - **Conference version**: [Video Individual Counting for Moving Drones](https://arxiv.org/abs/2503.10701), an ICCV 2025 Highlight paper, introduced the **MovingDroneCrowd** dataset and **SDNet** for video individual counting.
-- **Extended version**: [Video Individual Counting and Tracking from Moving Drones: A Benchmark and Methods](https://arxiv.org/abs/2601.12500) extends the benchmark to **MovingDroneCrowd++**, proposes the stronger and more interpretable VIC method **GD<sup>3</sup>A**, and further introduces the dense crowd tracking method **DVTrack**.
+- **Extended version**: [Video Individual Counting and Tracking from Moving Drones: A Benchmark and Methods](https://arxiv.org/abs/2601.12500) extends the benchmark to **MovingDroneCrowd++**, proposes the stronger and more interpretable VIC method **GD<sup>3</sup>A**, and further introduces the dense crowd tracking method **GIA-Track**.
 
-In short, **MovingDroneCrowd + SDNet** correspond to the conference paper, while **MovingDroneCrowd++ + GD<sup>3</sup>A + DVTrack** correspond to the extended paper. **MovingDroneCrowd++** is built by extending **MovingDroneCrowd**. This repository provides the extended MovingDroneCrowd++ dataset protocol and split files, while also preserving the split files of the conference-version MovingDroneCrowd for reproducibility.
+In short, **MovingDroneCrowd + SDNet** correspond to the conference paper, while **MovingDroneCrowd++ + GD<sup>3</sup>A + GIA-Track** correspond to the extended paper. **MovingDroneCrowd++** is built by extending **MovingDroneCrowd**. This repository provides the extended MovingDroneCrowd++ dataset protocol and split files, while also preserving the split files of the conference-version MovingDroneCrowd for reproducibility.
 
 The ICCV 2025 version of the code has been released separately. If you want to use the previous conference-version code, please refer to the [Releases](https://github.com/fyw1999/MovingDroneCrowd/releases) page.
 
 ## Catalog
 
 - ✅ [MovingDroneCrowd / MovingDroneCrowd++](#movingdronecrowd--movingdronecrowd)
-- ✅ [Training and Testing Code for SDNet, GD<sup>3</sup>A, and DVTrack](#training-and-testing-code-for-sdnet-gd3a-and-dvtrack)
+- ✅ [Training and Testing Code for SDNet, GD<sup>3</sup>A, and GIA-Track](#training-and-testing-code-for-sdnet-gd3a-and-gia-track)
 - ✅ [Model Zoo](#model-zoo)
 
 ## MovingDroneCrowd / MovingDroneCrowd++
@@ -99,9 +101,9 @@ By using a pretrained global density map to filter out background descriptors, G
 
 GD<sup>3</sup>A requires identity supervision during training. However, it is more interpretable, trains faster, requires less GPU memory, and achieves better performance. Therefore, we recommend using GD<sup>3</sup>A as the preferred method when identity annotations are available.
 
-### DVTrack
+### GIA-Track
 
-DVTrack is built on the group-wise descriptor association of GD<sup>3</sup>A. Without additional training, it converts pixel-level matching into instance-level associations via a voting mechanism, delivering strong tracking performance for dense pedestrians under highly dynamic drone motion.
+GIA-Track is built on the group-wise descriptor association of GD<sup>3</sup>A. Without additional training, it converts pixel-level matching into instance-level associations via a voting mechanism, delivering strong tracking performance for dense pedestrians under highly dynamic drone motion.
 
 ### Method Choice
 
@@ -109,11 +111,11 @@ DVTrack is built on the group-wise descriptor association of GD<sup>3</sup>A. Wi
 | --- | --- | --- | --- | --- |
 | SDNet | VIC | Not required | Works with in/out annotations; easier to use without IDs | Less interpretable; high computation; slower training |
 | GD<sup>3</sup>A | VIC | Required | More interpretable; faster training; better accuracy when IDs are available | Requires ID annotations |
-| DVTrack | Tracking | Uses trained GD<sup>3</sup>A | No extra training; strong dense-crowd tracking |  |
+| GIA-Track | Tracking | Uses trained GD<sup>3</sup>A | No extra training; strong dense-crowd tracking |  |
 
-<a id="training-and-testing-code-for-sdnet-gd3a-and-dvtrack"></a>
+<a id="training-and-testing-code-for-sdnet-gd3a-and-gia-track"></a>
 
-## Training and Testing Code for SDNet, GD<sup>3</sup>A, and DVTrack
+## Training and Testing Code for SDNet, GD<sup>3</sup>A, and GIA-Track
 
 ### Preparation
 
@@ -278,12 +280,12 @@ python test.py \
 ```
 
 To save visualizations, set `--test_visual True`. If you need full inflow/outflow evaluation (MIAE and MOAE) on every adjacent pair, set `skip_flag=False` in `test.py` before running.
-#### Test DVTrack
+#### Test GIA-Track
 
-For DVTrack, `MODEL` must be `GD3A`. The model and counter parameters are the same as in the GD<sup>3</sup>A test above: set `model_path` to the trained GD<sup>3</sup>A checkpoint, set `counter` to `STEERER` or `customed`, and set `pre_trained_counter_path` to the corresponding pretrained global counter.
+For GIA-Track, `MODEL` must be `GD3A`. The model and counter parameters are the same as in the GD<sup>3</sup>A test above: set `model_path` to the trained GD<sup>3</sup>A checkpoint, set `counter` to `STEERER` or `customed`, and set `pre_trained_counter_path` to the corresponding pretrained global counter.
 
 ```bash
-python DVTracker.py \
+python GIA_Track.py \
   --MODEL GD3A \
   --DATASET MovingDroneCrowd \
   --model_path /path/to/gd3a_model.pth \
@@ -293,10 +295,10 @@ python DVTracker.py \
   --GPU_ID 0
 ```
 
-Evaluate the tracking results with TrackEval. Set `dataset_root` to the MovingDroneCrowd++ dataset path, and set `pred_root` to the prediction result path saved by `DVTracker.py`.
+Evaluate the tracking results with TrackEval. Set `dataset_root` to the MovingDroneCrowd++ dataset path, and set `pred_root` to the prediction result path saved by `GIA_Track.py`.
 
 ```bash
-python DVTack_evaluation.py \
+python GIA_Track_evaluation.py \
   --dataset_root /path/to/MovingDroneCrowd++ \
   --pred_root test_results/MovingDroneCrowd/<tracker_run_name> \
 ```
